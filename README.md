@@ -1,4 +1,4 @@
-cd C:\Visual Studio Code Projekte\Arbeit\WeTolk
+cd "C:\Visual Studio Code Projekte\Arbeit\WeTolk"
 
 .\venv\Scripts\Activate.ps1
 
