@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block title %}➕ Neues Knowledge{% endblock title %}
+
+{% block extra_css %}
+  <!-- Tagify CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/@yaireo/tagify/dist/tagify.css">
+{% endblock extra_css %}
+
+{% block content %}
+
+
+
+<div class="glass max-w-2xl mx-auto p-10 rounded-2xl">
+  <h1 class="text-3xl font-extrabold text-indigo-700 mb-6 text-center">Neues Knowledge anlegen</h1>
+
+  <form method="post" enctype="multipart/form-data" class="space-y-6">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <!-- Grid für Dropdowns und Textinput -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div>
+        {{ form.title.label_tag }}
+        {{ form.title|add_class:"w-full p-3 rounded border border-gray-300 focus:ring-2 focus:ring-indigo-200 transition" }}
+        {{ form.title.errors }}
+      </div>
+      <div>
+        {{ form.role.label_tag }}
+        {{ form.role|add_class:"w-full p-3 rounded border border-gray-300 focus:ring-2 focus:ring-indigo-200 transition" }}
+        {{ form.role.errors }}
+      </div>
+      <div>
+        {{ form.category.label_tag }}
+        {{ form.category|add_class:"w-full p-3 rounded border border-gray-300 focus:ring-2 focus:ring-indigo-200 transition" }}
+        {{ form.category.errors }}
+      </div>
+      <div>
+        {{ form.subcategory.label_tag }}
+        {{ form.subcategory|add_class:"w-full p-3 rounded border border-gray-300 focus:ring-2 focus:ring-indigo-200 transition" }}
+        {{ form.subcategory.errors }}
+      </div>
+      <div>
+        {{ form.type.label_tag }}
+        {{ form.type|add_class:"w-full p-3 rounded border border-gray-300 focus:ring-2 focus:ring-indigo-200 transition" }}
+        {{ form.type.errors }}
+      </div>
+      <div>
+        {{ form.project.label_tag }}
+        {{ form.project|add_class:"w-full p-3 rounded border border-gray-300 focus:ring-2 focus:ring-indigo-200 transition" }}
+        {{ form.project.errors }}
+      </div>
+      <div class="sm:col-span-2">
+        {{ form.project_type.label_tag }}
+        {{ form.project_type|add_class:"w-full p-3 rounded border border-gray-300 focus:ring-2 focus:ring-indigo-200 transition" }}
+        {{ form.project_type.errors }}
+      </div>
+    </div>
+
+    <!-- Schlagworte mit Tagify -->
+    <div>
+      {{ form.tags.label_tag }}
+      {{ form.tags|add_class:"w-full p-3 rounded border border-gray-300 focus:ring-2 focus:ring-indigo-200 transition" }}
+      {{ form.tags.errors }}
+    </div>
+
+    <!-- Freitextfelder -->
+    <div>
+      {{ form.description.label_tag }}
+      {{ form.description|add_class:"w-full p-3 h-32 rounded border border-gray-300 focus:ring-2 focus:ring-indigo-200 transition resize-none" }}
+      {{ form.description.errors }}
+    </div>
+    <div>
+      {{ form.solution.label_tag }}
+      {{ form.solution|add_class:"w-full p-3 h-32 rounded border border-gray-300 focus:ring-2 focus:ring-indigo-200 transition resize-none" }}
+      {{ form.solution.errors }}
+    </div>
+    <div>
+      {{ form.impact.label_tag }}
+      {{ form.impact|add_class:"w-full p-3 h-24 rounded border border-gray-300 focus:ring-2 focus:ring-indigo-200 transition resize-none" }}
+      {{ form.impact.errors }}
+    </div>
+
+    <!-- Anhang -->
+    <div>
+      {{ form.attachment.label_tag }}
+      {{ form.attachment|add_class:"block w-full text-gray-700 mt-1" }}
+      {{ form.attachment.errors }}
+    </div>
+
+    <!-- Submit -->
+    <button type="submit"
+            class="w-full bg-gradient-to-r from-indigo-500 to-teal-400 text-white font-bold py-3 rounded-xl shadow-lg hover:scale-105 transform transition">
+      🎫 Knowledge erstellen
+    </button>
+  </form>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+  <script src="https://unpkg.com/@yaireo/tagify"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', ()=> {
+    let input = document.querySelector('input[name="tags"]');
+    if(input) new Tagify(input, { delimiters: ",", maxTags: 10 });
+  });
+  </script>
+{% endblock extra_js %}

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Knowledge Base{% endblock %}</title>
+  {% load static %}
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+</head>
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-blue-100 via-indigo-100 to-teal-200">
+  <header class="bg-white/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto flex items-center py-4 px-6">
+      <h1 class="text-2xl font-bold text-indigo-700">Knowledge Base</h1>
+      <div class="flex-1"></div>
+      <a href="{% url 'tickets:ticket_list' %}"
+         class="inline-flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg shadow transition">
+        📂 Alle Knowledges
+      </a>
+      <a href="{% url 'tickets:ticket_create' %}"
+         class="ml-4 inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg shadow transition">
+        ➕ Neues Knowledge
+      </a>
+    </div>
+  </header>
+  <main class="flex-1 py-6 px-4">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="text-center py-4 text-gray-600">© 2025 Your Company</footer>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
