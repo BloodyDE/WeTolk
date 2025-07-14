@@ -19,7 +19,7 @@ class TicketForm(forms.ModelForm):
             'impact',
             'attachment',
         ]
-        
+
         labels = {
             'title': 'Titel',
             'role': 'Rolle',
