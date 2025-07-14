@@ -64,7 +64,7 @@
     {% for comment in ticket.comments.all %}
       <div class="mb-4">
         <div class="text-sm text-gray-600">
-          {{ comment.created_at|date:"d.m.Y H:i" }} – {{ comment.user.username }}
+          {{ comment.created_at|date:"d.m.Y H:i" }} – {{ comment.created_by.username }}
         </div>
         <div class="ml-4 text-gray-800 whitespace-pre-wrap">
           {{ comment.message }}
