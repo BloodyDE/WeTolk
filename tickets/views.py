@@ -1,27 +1,30 @@
-# tickets/views.py
 from django.views.generic import CreateView, ListView, DetailView
-from django.urls import reverse
+from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404, render
 from .models import Ticket
 from .forms import TicketForm, CommentForm
-from django.shortcuts import get_object_or_404, render
 
 class TicketCreateView(CreateView):
-    model         = Ticket
-    form_class    = TicketForm
+    model = Ticket
+    form_class = TicketForm
     template_name = "tickets/ticket_form.html"
+    # Nach erfolgreichem Abspeichern direkt zur Liste weiterleiten:
+    success_url = reverse_lazy("tickets:ticket_list")
+
     def form_valid(self, form):
+        # Setze das Feld created_by automatisch auf den angemeldeten User
         form.instance.created_by = self.request.user
         return super().form_valid(form)
-    def get_success_url(self):
-        return reverse("tickets:ticket_create") + "?created=1"
+
 
 class TicketListView(ListView):
-    model               = Ticket
-    template_name       = "tickets/ticket_list.html"
+    model = Ticket
+    template_name = "tickets/ticket_list.html"
     context_object_name = "object_list"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
+        # Baum-Struktur für Kategorie → Unterkategorie
         tree = {}
         for t in ctx["object_list"]:
             tree.setdefault(t.category, {}) \
@@ -30,9 +33,10 @@ class TicketListView(ListView):
         ctx["ticket_tree"] = tree
         return ctx
 
+
 class TicketDetailView(DetailView):
-    model               = Ticket
-    template_name       = "tickets/ticket_detail.html"
+    model = Ticket
+    template_name = "tickets/ticket_detail.html"
     context_object_name = "ticket"
 
     def get_context_data(self, **kwargs):
@@ -40,10 +44,10 @@ class TicketDetailView(DetailView):
         ctx["comment_form"] = CommentForm()
         return ctx
 
+
 def ticket_snippet(request, pk):
     """
-    HTMX-Snippet: Lädt die Detail-Ansicht eines Tickets
-    und rendert nur den Ausschnitt für #detail-pane.
+    HTMX-Snippet: Lädt nur den Detail-Ausschnitt für #detail-pane.
     """
     ticket = get_object_or_404(Ticket, pk=pk)
     comment_form = CommentForm()
