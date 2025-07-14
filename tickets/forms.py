@@ -7,11 +7,33 @@ class TicketForm(forms.ModelForm):
     class Meta:
         model = Ticket
         fields = [
-            'title', 'role', 'category', 'subcategory', 'type',
-            'tags', 'project', 'project_type',
-            'description', 'solution', 'impact',
+            'title',
+            'role',
+            'category',
+            'subcategory',
+            'project',
+            'project_type',
+            'tags',
+            'description',
+            'solution',
+            'impact',
             'attachment',
         ]
+        
+        labels = {
+            'title': 'Titel',
+            'role': 'Rolle',
+            'category': 'Kategorie',
+            'subcategory': 'Unterkategorie',
+            'project': 'Projekt',
+            'project_type': 'Projektart',
+            'tags': 'Schlagworte',
+            'description': 'Beschreibung',
+            'solution': 'Lösung',
+            'impact': 'Auswirkung',
+            'attachment': 'Anhang',
+        }
+
         widgets = {
             'role':         forms.Select(attrs={'class': 'p-2 border rounded w-full'}),
             'category':     forms.TextInput(attrs={'class': 'p-2 border rounded w-full'}),
