@@ -25,9 +25,7 @@ class Ticket(models.Model):
         ('Kommunikation',     'Kommunikation'),
     ]
     TYPE_CHOICES = [
-        ('Bug',     'Bug'),
-        ('Feature', 'Feature'),
-        ('Task',    'Task'),
+        ('Organisatorisch',     'Organisatorisch'),
     ]
     PROJECT_CHOICES = [
         ('Sonne', 'Sonne'),

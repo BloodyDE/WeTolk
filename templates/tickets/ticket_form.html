@@ -1,4 +1,3 @@
-{# templates/tickets/ticket_form.html #}
 {% extends "base.html" %}
 {% load widget_tweaks %}
 
@@ -44,48 +43,48 @@
 
     {# 2. Metadaten (Dropdowns) #}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-  <!-- Rolle -->
-  <div>
-    {{ form.role.label_tag }}
-    {{ form.role|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
-    {{ form.role.errors }}
-  </div>
+      <!-- Rolle -->
+      <div>
+        {{ form.role.label_tag }}
+        {{ form.role|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+        {{ form.role.errors }}
+      </div>
 
-  <!-- Kategorie -->
-  <div>
-    {{ form.category.label_tag }}
-    {{ form.category|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
-    {{ form.category.errors }}
-  </div>
+      <!-- Kategorie -->
+      <div>
+        {{ form.category.label_tag }}
+        {{ form.category|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+        {{ form.category.errors }}
+      </div>
 
-  <!-- Subkategorie -->
-  <div>
-    {{ form.subcategory.label_tag }}
-    {{ form.subcategory|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
-    {{ form.subcategory.errors }}
-  </div>
+      <!-- Subkategorie -->
+      <div>
+        {{ form.subcategory.label_tag }}
+        {{ form.subcategory|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+        {{ form.subcategory.errors }}
+      </div>
 
-  <!-- Projekt -->
-  <div>
-    {{ form.project.label_tag }}
-    {{ form.project|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
-    {{ form.project.errors }}
-  </div>
+      <!-- Projekt -->
+      <div>
+        {{ form.project.label_tag }}
+        {{ form.project|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+        {{ form.project.errors }}
+      </div>
 
-  <!-- Projekttyp -->
-  <div>
-    {{ form.project_type.label_tag }}
-    {{ form.project_type|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
-    {{ form.project_type.errors }}
-  </div>
+      <!-- Projekttyp -->
+      <div>
+        {{ form.project_type.label_tag }}
+        {{ form.project_type|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+        {{ form.project_type.errors }}
+      </div>
 
-  <!-- NEU: Art (type) -->
-  <div>
-    {{ form.type.label_tag }}
-    {{ form.type|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
-    {{ form.type.errors }}
-  </div>
-</div>
+      <!-- NEU: Art (type) -->
+      <div>
+        {{ form.type.label_tag }}
+        {{ form.type|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+        {{ form.type.errors }}
+      </div>
+    </div>
 
     {# 2.1 Schlagworte #}
     <div>
@@ -104,22 +103,13 @@
       {{ form.tags.errors }}
     </div>
 
-    {# 3. Freitextfelder mit Live‑Preview #}
+    {# 3. Freitextfelder mit Live‑Preview & Bulletpoints #}
     <div class="space-y-6">
 
       {# Beschreibung #}
       <div>
         {{ form.description.label_tag }}
-        <textarea
-          id="{{ form.description.id_for_label }}"
-          name="{{ form.description.html_name }}"
-          class="w-full p-3 h-32 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition resize-none"
-          hx-post="{% url 'tickets:preview_bullet' %}"
-          hx-trigger="keyup changed delay:300ms"
-          hx-target="#desc-preview"
-          hx-swap="innerHTML"
-          name="text"
-        >{{ form.description.value|default_if_none:"" }}</textarea>
+        {{ form.description }}
         {{ form.description.errors }}
         <div id="desc-preview" class="mt-2"></div>
       </div>
@@ -127,16 +117,7 @@
       {# Lösung #}
       <div>
         {{ form.solution.label_tag }}
-        <textarea
-          id="{{ form.solution.id_for_label }}"
-          name="{{ form.solution.html_name }}"
-          class="w-full p-3 h-32 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition resize-none"
-          hx-post="{% url 'tickets:preview_bullet' %}"
-          hx-trigger="keyup changed delay:300ms"
-          hx-target="#solu-preview"
-          hx-swap="innerHTML"
-          name="text"
-        >{{ form.solution.value|default_if_none:"" }}</textarea>
+        {{ form.solution }}
         {{ form.solution.errors }}
         <div id="solu-preview" class="mt-2"></div>
       </div>
@@ -144,16 +125,7 @@
       {# Auswirkung #}
       <div>
         {{ form.impact.label_tag }}
-        <textarea
-          id="{{ form.impact.id_for_label }}"
-          name="{{ form.impact.html_name }}"
-          class="w-full p-3 h-24 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition resize-none"
-          hx-post="{% url 'tickets:preview_bullet' %}"
-          hx-trigger="keyup changed delay:300ms"
-          hx-target="#imp-preview"
-          hx-swap="innerHTML"
-          name="text"
-        >{{ form.impact.value|default_if_none:"" }}</textarea>
+        {{ form.impact }}
         {{ form.impact.errors }}
         <div id="imp-preview" class="mt-2"></div>
       </div>
@@ -181,8 +153,8 @@
 
 {% block extra_js %}
 <script>
+// Schlagworte‑Chips
 document.addEventListener('DOMContentLoaded', function() {
-  // Schlagworte‑Chips
   const hiddenInput = document.getElementById('id_tags'),
         textInput   = document.getElementById('tag-field'),
         container   = document.getElementById('tag-input-container');
@@ -214,6 +186,50 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     render();
   }
+});
+</script>
+<script>
+// Bulletpoints bei Enter
+document.addEventListener("DOMContentLoaded", function() {
+  const fields = ["id_description", "id_solution", "id_impact"];
+
+  fields.forEach(function(fieldId) {
+    const textarea = document.getElementById(fieldId);
+    if (!textarea) return;
+
+    textarea.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+
+        const value = this.value;
+        const start = this.selectionStart;
+
+        // 1) Bullet in der aktuellen Zeile sicherstellen
+        const lineStart = value.lastIndexOf("\n", start - 1) + 1;
+        let newValue = value;
+        let shift = 0;
+        if (newValue.substr(lineStart, 2) !== "• ") {
+          newValue =
+            newValue.slice(0, lineStart) +
+            "• " +
+            newValue.slice(lineStart);
+          shift = 2;
+        }
+
+        // 2) Neuen Bullet-Abschnitt anhängen
+        const newCursorPos = start + shift;
+        const insert = "\n• ";
+        this.value =
+          newValue.slice(0, newCursorPos) +
+          insert +
+          newValue.slice(newCursorPos);
+
+        // 3) Cursor positionieren
+        const caretPos = newCursorPos + insert.length;
+        this.selectionStart = this.selectionEnd = caretPos;
+      }
+    });
+  });
 });
 </script>
 {% endblock extra_js %}

@@ -5,7 +5,7 @@ class TicketForm(forms.ModelForm):
     class Meta:
         model  = Ticket
         fields = [
-            'creator_name',  # unbedingt hier aufnehmen!
+            'creator_name',  
             'title',
             'role',
             'category',
@@ -35,29 +35,56 @@ class TicketForm(forms.ModelForm):
             'attachment':   'Anhang',
         }
         widgets = {
-            'creator_name': forms.TextInput(attrs={
-                'class': 'w-full p-2 border rounded',
-                'placeholder': '(Pflichtfeld)',
+            "creator_name": forms.TextInput(attrs={
+                "placeholder": "z. B. Max Mustermann",
+                "class": "w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition"
             }),
-            'role':         forms.Select(attrs={'class': 'p-2 border rounded w-full'}),
-            'category':     forms.Select(attrs={'class': 'p-2 border rounded w-full'}),
-            'subcategory':  forms.Select(attrs={'class': 'p-2 border rounded w-full'}),
-            'type':         forms.Select(attrs={'class': 'p-2 border rounded w-full'}),
-            'project':      forms.Select(attrs={'class': 'p-2 border rounded w-full'}),
-            'project_type': forms.Select(attrs={'class': 'p-2 border rounded w-full'}),
-            'tags':         forms.HiddenInput(),
-            'description':  forms.Textarea(attrs={'class': 'p-2 border rounded w-full h-32'}),
-            'solution':     forms.Textarea(attrs={'class': 'p-2 border rounded w-full h-32'}),
-            'impact':       forms.Textarea(attrs={'class': 'p-2 border rounded w-full h-32'}),
-        }
+            "title": forms.TextInput(attrs={
+                "placeholder": "Kurzen, aussagekräftigen Titel eingeben",
+                "class": "w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition"
+            }),
+            "tags": forms.TextInput(attrs={
+                "placeholder": "Schlagworte mit Komma trennen, z. B. bug, ui, backend",
+                "class": "w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition"
+            }),
 
+            # Dropdowns bleiben Select (keine placeholder)
+            "role": forms.Select(attrs={"class": "w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition"}),
+            "category": forms.Select(attrs={"class": "w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition"}),
+            "subcategory": forms.Select(attrs={"class": "w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition"}),
+            "project": forms.Select(attrs={"class": "w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition"}),
+            "project_type": forms.Select(attrs={"class": "w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition"}),
+            "type": forms.Select(attrs={"class": "w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition"}),
+
+            # Textareas mit Placeholder
+            "description": forms.Textarea(attrs={
+                "placeholder": "Problem hier beschreiben…",
+                "class": "w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition",
+                "rows": 4
+            }),
+            "solution": forms.Textarea(attrs={
+                "placeholder": "Lösungsidee hier skizzieren…",
+                "class": "w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition",
+                "rows": 4
+            }),
+            "impact": forms.Textarea(attrs={
+                "placeholder": "Auswirkungen erläutern…",
+                "class": "w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition",
+                "rows": 4
+            }),
+
+            # Attachment bleibt ClearableFileInput
+            "attachment": forms.ClearableFileInput(attrs={"class": "mt-2"}),
+        }
 
 class CommentForm(forms.ModelForm):
     class Meta:
-        model  = TicketComment
+        model = TicketComment
         fields = ["message"]
         widgets = {
             "message": forms.Textarea(attrs={
-                "class": "p-2 border rounded w-full h-24 focus:ring-4 focus:ring-indigo-200"
+                "placeholder": "Hier deinen Kommentar eingeben…",
+                "class": "w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition",
+                "rows": 4
             }),
         }
