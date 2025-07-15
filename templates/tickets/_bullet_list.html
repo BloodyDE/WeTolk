@@ -1,0 +1,8 @@
+{# _bullet_list.html #}
+<ul class="list-disc pl-5 space-y-1">
+  {% for line in text.splitlines %}
+    {% if line.strip %}
+      <li>{{ line|escape }}</li>
+    {% endif %}
+  {% endfor %}
+</ul>

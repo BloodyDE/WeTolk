@@ -1,8 +1,14 @@
+#tickets/views.py
 from django.views.generic import CreateView, ListView, DetailView
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404, render
 from .models import Ticket
 from .forms import TicketForm, CommentForm
+from django.http import HttpResponse
+from django.utils.html import escape
+from django.template.loader import render_to_string
+from django.views.decorators.http import require_POST
+
 
 class TicketCreateView(CreateView):
     model = Ticket
@@ -55,3 +61,9 @@ def ticket_snippet(request, pk):
         "ticket": ticket,
         "comment_form": comment_form,
     })
+
+@require_POST
+def preview_bullet(request):
+    # den rohen Text aus dem Body holen (falls Inhalt direkt gesendet)
+    text = request.POST.get('description', '') or request.body.decode()
+    return render(request, "tickets/_bullet_list.html", { "text": text })
