@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import preview_bullet
 
 app_name = "tickets"
 
@@ -15,4 +16,7 @@ urlpatterns = [
 
     # Vollständige Detail-Seite (optional)
     path("<int:pk>/", views.TicketDetailView.as_view(), name="ticket_detail"),
-]
+
+    # _bullet_list.html-Snippet für HTMX-Vorschau
+    path("preview/", preview_bullet, name="preview_bullet"),
+    ]

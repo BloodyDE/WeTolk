@@ -1,5 +1,6 @@
 {# templates/tickets/ticket_snippet.html #}
 {% load widget_tweaks %}
+{% load bulletify %}
 
 <div class="p-6 bg-white bg-opacity-90 rounded-2xl shadow-lg">
 
@@ -28,14 +29,14 @@
   <!-- Beschreibung -->
   <div class="mb-6">
     <h2 class="font-semibold text-gray-800 mb-2">📋 Beschreibung</h2>
-    <p class="text-gray-700 whitespace-pre-wrap">{{ ticket.description }}</p>
+    {{ ticket.description|bulletify }}
   </div>
 
   <!-- Lösung -->
   {% if ticket.solution %}
   <div class="mb-6">
     <h2 class="font-semibold text-gray-800 mb-2">💡 Lösung</h2>
-    <p class="text-gray-700 whitespace-pre-wrap">{{ ticket.solution }}</p>
+    {{ ticket.solution|bulletify }}
   </div>
   {% endif %}
 
@@ -43,7 +44,7 @@
   {% if ticket.impact %}
   <div class="mb-6">
     <h2 class="font-semibold text-gray-800 mb-2">⚡ Auswirkungen</h2>
-    <p class="text-gray-700 whitespace-pre-wrap">{{ ticket.impact }}</p>
+    {{ ticket.impact|bulletify }}
   </div>
   {% endif %}
 
