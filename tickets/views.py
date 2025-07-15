@@ -52,18 +52,25 @@ class TicketDetailView(DetailView):
 
 
 def ticket_snippet(request, pk):
-    """
-    HTMX-Snippet: Lädt nur den Detail-Ausschnitt für #detail-pane.
-    """
     ticket = get_object_or_404(Ticket, pk=pk)
     comment_form = CommentForm()
-    return render(request, "tickets/ticket_snippet.html", {
-        "ticket": ticket,
-        "comment_form": comment_form,
-    })
+    return render(
+        request,
+        "tickets/ticket_snippet.html",
+        {
+            "ticket": ticket,
+            "comment_form": comment_form,
+        },
+    )
 
-@require_POST
 def preview_bullet(request):
-    # den rohen Text aus dem Body holen (falls Inhalt direkt gesendet)
-    text = request.POST.get('description', '') or request.body.decode()
-    return render(request, "tickets/_bullet_list.html", { "text": text })
+    # Wir schauen, ob description, solution oder impact im POST ist:
+    text = (
+        request.POST.get('description', '') or
+        request.POST.get('solution', '')    or
+        request.POST.get('impact', '')      or
+        ''
+    )
+    # Rendern des kleinen Partials mit den <li>…</li>
+    html = render_to_string("tickets/_bullet_list.html", {"text": text})
+    return HttpResponse(html)
