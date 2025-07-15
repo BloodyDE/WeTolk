@@ -1,22 +1,49 @@
+# tickets/urls.py
+
 from django.urls import path
-from . import views
-from .views import preview_bullet
+from .views import (
+    TicketListView,
+    TicketCreateView,
+    TicketDetailView,
+    ticket_snippet,
+    preview_bullet,
+)
 
 app_name = "tickets"
 
 urlpatterns = [
-    # Root → Liste aller Knowledges
-    path("", views.TicketListView.as_view(),   name="ticket_list"),
+    # Übersicht aller Knowledges unter "/"
+    path(
+        "",
+        TicketListView.as_view(),
+        name="ticket_list"
+    ),
 
-    # Create-Form unter /create/
-    path("create/", views.TicketCreateView.as_view(), name="ticket_create"),
+    # Formular zum Erstellen eines neuen Knowledges unter "/create/"
+    path(
+        "create/",
+        TicketCreateView.as_view(),
+        name="ticket_create"
+    ),
 
-    # HTMX-Snippet
-    path("snippet/<int:pk>/", views.ticket_snippet, name="ticket_snippet"),
+    # HTMX-Snippet: lädt Detailansicht in einen Ausschnitt unter "/snippet/<pk>/"
+    path(
+        "snippet/<int:pk>/",
+        ticket_snippet,
+        name="ticket_snippet"
+    ),
 
-    # Vollständige Detail-Seite (optional)
-    path("<int:pk>/", views.TicketDetailView.as_view(), name="ticket_detail"),
+    # Volle Detailseite (Fallback), z.B. für direkten Link "/<pk>/"
+    path(
+        "<int:pk>/",
+        TicketDetailView.as_view(),
+        name="ticket_detail"
+    ),
 
-    # _bullet_list.html-Snippet für HTMX-Vorschau
-    path("preview/", preview_bullet, name="preview_bullet"),
-    ]
+    # HTMX‑Endpoint für Live‑Bullet‑Preview unter "/preview/"
+    path(
+        "preview/",
+        preview_bullet,
+        name="preview_bullet"
+    ),
+]

@@ -1,9 +1,8 @@
+{# templates/tickets/ticket_form.html #}
 {% extends "base.html" %}
 {% load widget_tweaks %}
 
-{% block title %}
-➕ Neues Knowledge
-{% endblock title %}
+{% block title %}➕ Neues Knowledge{% endblock %}
 
 {% block extra_css %}
   <!-- Tagify CSS -->
@@ -11,153 +10,171 @@
     rel="stylesheet"
     href="https://unpkg.com/@yaireo/tagify/dist/tagify.css"
   >
-{% endblock extra_css %}
+{% endblock %}
 
 {% block content %}
 <div class="glass max-w-2xl mx-auto p-10 rounded-2xl">
   <h1 class="text-3xl font-extrabold text-indigo-700 mb-6 text-center">
     Neues Knowledge anlegen
   </h1>
+
   {{ form.errors }}
 
   <form
     method="post"
     enctype="multipart/form-data"
-    class="space-y-8 max-w-3xl mx-auto"
+    class="space-y-8"
   >
     {% csrf_token %}
     {{ form.non_field_errors }}
 
-    {# 1. Titel (ganze Breite) #}
+    {# 1. Titel & Ersteller #}
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
       <div class="sm:col-span-2">
         {{ form.title.label_tag }}
-        {{ form.title|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 backdrop-blur-sm focus:ring-2 focus:ring-indigo-200 transition" }}
+        {{ form.title|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
         {{ form.title.errors }}
       </div>
-    </div>
-
-    {# 2. Metadaten (2-Spalten-Grid) #}
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-      <div>
-        {{ form.role.label_tag }}
-        {{ form.role|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 backdrop-blur-sm focus:ring-2 focus:ring-indigo-200 transition" }}
-        {{ form.role.errors }}
-      </div>
-      <div>
-        {{ form.category.label_tag }}
-        {{ form.category|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 backdrop-blur-sm focus:ring-2 focus:ring-indigo-200 transition" }}
-        {{ form.category.errors }}
-      </div>
-      <div>
-        {{ form.subcategory.label_tag }}
-        {{ form.subcategory|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 backdrop-blur-sm focus:ring-2 focus:ring-indigo-200 transition" }}
-        {{ form.subcategory.errors }}
-      </div>
-      <div>
-        {{ form.project.label_tag }}
-        {{ form.project|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 backdrop-blur-sm focus:ring-2 focus:ring-indigo-200 transition" }}
-        {{ form.project.errors }}
-      </div>
-      <div>
-        {{ form.project_type.label_tag }}
-        {{ form.project_type|add_class:"w-full max-w-xs p-3 rounded border border-gray-300 bg-white/75 backdrop-blur-sm focus:ring-2 focus:ring-indigo-200 transition" }}
-        {{ form.project_type.errors }}
-      </div>
-
-      {# 2.1 Schlagworte (Custom-Widget) #}
-      <div>
-        <label
-          for="{{ form.tags.id_for_label }}"
-          class="block text-gray-700 font-normal"
-        >
-          {{ form.tags.label }}:
-        </label>
-        {{ form.tags.as_hidden }}
-        <div
-          id="tag-input-container"
-          class="mt-1 flex flex-wrap items-center rounded border border-gray-300
-                 bg-white/75 backdrop-blur-sm p-2 gap-1"
-        >
-          <input
-            id="tag-field"
-            type="text"
-            placeholder="Tag eingeben und Leer/Komma drücken"
-            class="flex-1 min-w-[6rem] p-1 outline-none
-                   bg-white/75 backdrop-blur-sm
-                   focus:ring-2 focus:ring-indigo-200 transition"
-          />
-        </div>
-        {{ form.tags.errors }}
+      <div class="sm:col-span-2">
+        {{ form.creator_name.label_tag }}
+        {{ form.creator_name|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+        {{ form.creator_name.errors }}
       </div>
     </div>
 
-{# 3. Freitextfelder mit Live‑Preview #}
-<div class="space-y-6">
-
-  {# Beschreibung #}
+    {# 2. Metadaten (Dropdowns) #}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+  <!-- Rolle -->
   <div>
-    {{ form.description.label_tag }}
-    <textarea
-      id="{{ form.description.id_for_label }}"
-      name="{{ form.description.html_name }}"
-      class="w-full p-3 h-32 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition resize-none"
-      hx-post="{% url 'tickets:preview_bullet' %}"
-      hx-trigger="keyup changed delay:300ms"
-      hx-target="#desc-preview"
-      hx-swap="innerHTML"
-    >{{ form.description.value|default_if_none:"" }}</textarea>
-    {{ form.description.errors }}
-    <div id="desc-preview" class="mt-2"></div>
+    {{ form.role.label_tag }}
+    {{ form.role|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+    {{ form.role.errors }}
   </div>
 
-  {# Lösung #}
+  <!-- Kategorie -->
   <div>
-    {{ form.solution.label_tag }}
-    <textarea
-      id="{{ form.solution.id_for_label }}"
-      name="{{ form.solution.html_name }}"
-      class="w-full p-3 h-32 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition resize-none"
-      hx-post="{% url 'tickets:preview_bullet' %}"
-      hx-trigger="keyup changed delay:300ms"
-      hx-target="#solu-preview"
-      hx-swap="innerHTML"
-    >{{ form.solution.value|default_if_none:"" }}</textarea>
-    {{ form.solution.errors }}
-    <div id="solu-preview" class="mt-2"></div>
+    {{ form.category.label_tag }}
+    {{ form.category|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+    {{ form.category.errors }}
   </div>
 
-  {# Auswirkung #}
+  <!-- Subkategorie -->
   <div>
-    {{ form.impact.label_tag }}
-    <textarea
-      id="{{ form.impact.id_for_label }}"
-      name="{{ form.impact.html_name }}"
-      class="w-full p-3 h-24 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition resize-none"
-      hx-post="{% url 'tickets:preview_bullet' %}"
-      hx-trigger="keyup changed delay:300ms"
-      hx-target="#imp-preview"
-      hx-swap="innerHTML"
-    >{{ form.impact.value|default_if_none:"" }}</textarea>
-    {{ form.impact.errors }}
-    <div id="imp-preview" class="mt-2"></div>
+    {{ form.subcategory.label_tag }}
+    {{ form.subcategory|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+    {{ form.subcategory.errors }}
+  </div>
+
+  <!-- Projekt -->
+  <div>
+    {{ form.project.label_tag }}
+    {{ form.project|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+    {{ form.project.errors }}
+  </div>
+
+  <!-- Projekttyp -->
+  <div>
+    {{ form.project_type.label_tag }}
+    {{ form.project_type|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+    {{ form.project_type.errors }}
+  </div>
+
+  <!-- NEU: Art (type) -->
+  <div>
+    {{ form.type.label_tag }}
+    {{ form.type|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+    {{ form.type.errors }}
   </div>
 </div>
+
+    {# 2.1 Schlagworte #}
+    <div>
+      <label for="{{ form.tags.id_for_label }}" class="block text-gray-700 font-normal">
+        {{ form.tags.label }}:
+      </label>
+      {{ form.tags.as_hidden }}
+      <div id="tag-input-container"
+           class="mt-1 flex flex-wrap items-center rounded border border-gray-300
+                  bg-white/75 p-2 gap-1 focus-within:ring-2 focus-within:ring-indigo-200">
+        <input id="tag-field"
+               type="text"
+               placeholder="Tag eingeben und Leer/Komma drücken"
+               class="flex-1 min-w-[6rem] p-1 outline-none bg-transparent"/>
+      </div>
+      {{ form.tags.errors }}
+    </div>
+
+    {# 3. Freitextfelder mit Live‑Preview #}
+    <div class="space-y-6">
+
+      {# Beschreibung #}
+      <div>
+        {{ form.description.label_tag }}
+        <textarea
+          id="{{ form.description.id_for_label }}"
+          name="{{ form.description.html_name }}"
+          class="w-full p-3 h-32 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition resize-none"
+          hx-post="{% url 'tickets:preview_bullet' %}"
+          hx-trigger="keyup changed delay:300ms"
+          hx-target="#desc-preview"
+          hx-swap="innerHTML"
+          name="text"
+        >{{ form.description.value|default_if_none:"" }}</textarea>
+        {{ form.description.errors }}
+        <div id="desc-preview" class="mt-2"></div>
+      </div>
+
+      {# Lösung #}
+      <div>
+        {{ form.solution.label_tag }}
+        <textarea
+          id="{{ form.solution.id_for_label }}"
+          name="{{ form.solution.html_name }}"
+          class="w-full p-3 h-32 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition resize-none"
+          hx-post="{% url 'tickets:preview_bullet' %}"
+          hx-trigger="keyup changed delay:300ms"
+          hx-target="#solu-preview"
+          hx-swap="innerHTML"
+          name="text"
+        >{{ form.solution.value|default_if_none:"" }}</textarea>
+        {{ form.solution.errors }}
+        <div id="solu-preview" class="mt-2"></div>
+      </div>
+
+      {# Auswirkung #}
+      <div>
+        {{ form.impact.label_tag }}
+        <textarea
+          id="{{ form.impact.id_for_label }}"
+          name="{{ form.impact.html_name }}"
+          class="w-full p-3 h-24 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition resize-none"
+          hx-post="{% url 'tickets:preview_bullet' %}"
+          hx-trigger="keyup changed delay:300ms"
+          hx-target="#imp-preview"
+          hx-swap="innerHTML"
+          name="text"
+        >{{ form.impact.value|default_if_none:"" }}</textarea>
+        {{ form.impact.errors }}
+        <div id="imp-preview" class="mt-2"></div>
+      </div>
+
+    </div>
 
     {# 4. Anhang #}
     <div>
       {{ form.attachment.label_tag }}
-      {{ form.attachment|add_class:"block w-full text-gray-700 mt-1 bg-white/75 backdrop-blur-sm" }}
+      {{ form.attachment|add_class:"block w-full text-gray-700 mt-1 bg-white/75 border border-gray-300 rounded px-3 py-2" }}
       {{ form.attachment.errors }}
     </div>
 
-    {# 5. Submit-Button (breit & groß) #}
+    {# 5. Submit-Button #}
     <button
       type="submit"
-      class="w-full bg-gradient-to-r from-indigo-500 to-teal-400 text-white font-bold py-4 px-8 text-lg rounded-2xl shadow-lg transform transition hover:scale-105"
+      class="w-full bg-gradient-to-r from-indigo-500 to-teal-400 text-white font-bold py-4 px-8 text-lg rounded-2xl shadow-lg transition hover:scale-105"
     >
       🎫 Knowledge erstellen
     </button>
+
   </form>
 </div>
 {% endblock content %}
@@ -165,56 +182,38 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  // Schlagworte‑Chips
   const hiddenInput = document.getElementById('id_tags'),
         textInput   = document.getElementById('tag-field'),
         container   = document.getElementById('tag-input-container');
-
-  if (!hiddenInput || !textInput || !container) return;
-
-  let tags = hiddenInput.value ? hiddenInput.value.split(',') : [];
-
-  function renderTags() {
-    container.querySelectorAll('span.tag-chip').forEach(el => el.remove());
-    tags.forEach((t, i) => {
-      const chip = document.createElement('span');
-      chip.className = 'tag-chip inline-flex items-center bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full mr-1 mb-1 text-sm';
-      chip.textContent = t;
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'ml-1 font-bold';
-      btn.textContent = '×';
-      btn.onclick = () => {
-        tags.splice(i, 1);
-        updateHidden();
-        renderTags();
-      };
-      chip.append(btn);
-      container.insertBefore(chip, textInput);
-    });
-  }
-
-  function updateHidden() {
-    hiddenInput.value = tags.join(',');
-  }
-
-  textInput.addEventListener('keydown', function(e) {
-    if (e.key === ' ' || e.key === ',') {
-      e.preventDefault();
-      const val = textInput.value.trim();
-      if (val && !tags.includes(val)) {
-        tags.push(val);
-        updateHidden();
-        renderTags();
+  if (hiddenInput && textInput && container) {
+    let tags = hiddenInput.value ? hiddenInput.value.split(',') : [];
+    const render = () => {
+      container.querySelectorAll('span.tag-chip').forEach(el=>el.remove());
+      tags.forEach((t,i) => {
+        const chip = document.createElement('span');
+        chip.className = 'tag-chip inline-flex items-center bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full mr-1 mb-1 text-sm';
+        chip.textContent = t;
+        const btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'ml-1 font-bold'; btn.textContent = '×';
+        btn.onclick = ()=>{ tags.splice(i,1); update(); render(); };
+        chip.append(btn);
+        container.insertBefore(chip, textInput);
+      });
+    };
+    const update = ()=> hiddenInput.value = tags.join(',');
+    textInput.addEventListener('keydown', e => {
+      if ((e.key===' '||e.key===',') && textInput.value.trim()) {
+        e.preventDefault();
+        if (!tags.includes(textInput.value.trim())) tags.push(textInput.value.trim());
+        textInput.value = ''; update(); render();
       }
-      textInput.value = '';
-    } else if (e.key === 'Backspace' && textInput.value === '') {
-      tags.pop();
-      updateHidden();
-      renderTags();
-    }
-  });
-
-  renderTags();
+      if (e.key==='Backspace' && textInput.value==='') {
+        tags.pop(); update(); render();
+      }
+    });
+    render();
+  }
 });
 </script>
 {% endblock extra_js %}

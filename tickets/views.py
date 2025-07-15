@@ -1,36 +1,34 @@
-#tickets/views.py
+# tickets/views.py
 from django.views.generic import CreateView, ListView, DetailView
 from django.urls import reverse_lazy
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
+from django.http import HttpResponseBadRequest
+from django.views.decorators.http import require_POST
+
 from .models import Ticket
 from .forms import TicketForm, CommentForm
-from django.http import HttpResponse
-from django.utils.html import escape
-from django.template.loader import render_to_string
-from django.views.decorators.http import require_POST
 
 
 class TicketCreateView(CreateView):
+    """
+    Zeigt das Formular zum Anlegen eines neuen Tickets und speichert es ab.
+    """
     model = Ticket
     form_class = TicketForm
     template_name = "tickets/ticket_form.html"
-    # Nach erfolgreichem Abspeichern direkt zur Liste weiterleiten:
     success_url = reverse_lazy("tickets:ticket_list")
-
-    def form_valid(self, form):
-        # Setze das Feld created_by automatisch auf den angemeldeten User
-        form.instance.created_by = self.request.user
-        return super().form_valid(form)
 
 
 class TicketListView(ListView):
+    """
+    Zeigt alle Tickets in einer Baum‑Ansicht nach Kategorie → Unterkategorie.
+    """
     model = Ticket
     template_name = "tickets/ticket_list.html"
-    context_object_name = "object_list"
+    context_object_name = "ticket_list"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        # Baum-Struktur für Kategorie → Unterkategorie
         tree = {}
         for t in ctx["object_list"]:
             tree.setdefault(t.category, {}) \
@@ -41,6 +39,9 @@ class TicketListView(ListView):
 
 
 class TicketDetailView(DetailView):
+    """
+    Detailansicht für ein einzelnes Ticket (Fallback, wenn kein HTMX‑Snippet verwendet wird).
+    """
     model = Ticket
     template_name = "tickets/ticket_detail.html"
     context_object_name = "ticket"
@@ -53,24 +54,29 @@ class TicketDetailView(DetailView):
 
 def ticket_snippet(request, pk):
     ticket = get_object_or_404(Ticket, pk=pk)
-    comment_form = CommentForm()
-    return render(
-        request,
-        "tickets/ticket_snippet.html",
-        {
-            "ticket": ticket,
-            "comment_form": comment_form,
-        },
-    )
+    if request.method == "POST":
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.ticket = ticket
+            comment.created_by = request.user
+            comment.save()
+        # nach dem Speichern den aktualisierten Kommentar‑Snippet zurückliefern
+    else:
+        form = CommentForm()
+    return render(request, "tickets/ticket_snippet.html", {
+        "ticket": ticket,
+        "comment_form": form,
+    })
 
+
+@require_POST
 def preview_bullet(request):
-    # Wir schauen, ob description, solution oder impact im POST ist:
-    text = (
-        request.POST.get('description', '') or
-        request.POST.get('solution', '')    or
-        request.POST.get('impact', '')      or
-        ''
-    )
-    # Rendern des kleinen Partials mit den <li>…</li>
-    html = render_to_string("tickets/_bullet_list.html", {"text": text})
-    return HttpResponse(html)
+    """
+    HTMX‑Endpoint: Nimmt im POST‑Body das Feld 'text' und
+    rendert daraus eine ul.list-disc via _bullet_list.html.
+    """
+    text = request.POST.get("text", "")
+    if not text.strip():
+        return HttpResponseBadRequest("Kein Text übergeben.")
+    return render(request, "tickets/_bullet_list.html", {"text": text})

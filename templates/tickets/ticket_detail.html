@@ -6,7 +6,7 @@
 <div class="max-w-3xl mx-auto py-8">
   <h1 class="text-3xl font-bold text-indigo-700 mb-4">{{ ticket.title }}</h1>
   <p class="text-sm text-gray-600 mb-6">
-    👤 von {{ ticket.created_by.username }} am {{ ticket.created_at|date:"d.m.Y H:i" }}
+    👤 von {{ ticket.creator_name }} am {{ ticket.created_at|date:"d.m.Y H:i" }}
   </p>
 
   <dl class="space-y-4">

@@ -1,13 +1,19 @@
+# tickets/models.py
+
 from django.db import models
 from django.contrib.auth import get_user_model
-from django import forms
 
 User = get_user_model()
 
 class Ticket(models.Model):
-    title = models.CharField(max_length=200)
+    creator_name = models.CharField(
+        max_length=100,
+        verbose_name="Name des Erstellers",
+        help_text="Bitte hier Deinen Namen eingeben",
+    )
+    title = models.CharField(max_length=200, verbose_name="Titel")
 
-    # 1) Deine Choice-Listen – jede Zeile ein (Value, Label)-Tupel
+    # Choice‑Listen
     ROLE_CHOICES = [
         ('Architekt',        'Architekt'),
         ('Elektroingenieur', 'Elektroingenieur'),
@@ -29,84 +35,88 @@ class Ticket(models.Model):
     PROJECT_TYPE_CHOICES = [
         ('Forschungsschiff', 'Forschungsschiff'),
     ]
-    #Für mehr Optionen einfach ('Elektroingenieur', 'Elektroingenieur') hinzufügen#
 
-    # 2) Felder mit choices=…  –  Django rendert dann automatisch <select>…
     role         = models.CharField(
                        max_length=50,
                        choices=ROLE_CHOICES,
-                       default='Architekt'
+                       default='Architekt',
+                       verbose_name="Rolle"
                    )
     category     = models.CharField(
                        max_length=50,
                        choices=CATEGORY_CHOICES,
-                       default='Projektmanagement'
+                       default='Projektmanagement',
+                       verbose_name="Kategorie"
                    )
     subcategory  = models.CharField(
                        max_length=50,
                        choices=SUBCATEGORY_CHOICES,
-                       default='Kommunikation'
+                       default='Kommunikation',
+                       verbose_name="Unterkategorie"
                    )
     type         = models.CharField(
                        max_length=50,
                        choices=TYPE_CHOICES,
-                       default='Task'
+                       default='Task',
+                       verbose_name="Art"
                    )
     project      = models.CharField(
                        max_length=50,
                        choices=PROJECT_CHOICES,
-                       default='Sonne'
+                       default='Sonne',
+                       verbose_name="Projekt"
                    )
     project_type = models.CharField(
                        max_length=50,
                        choices=PROJECT_TYPE_CHOICES,
-                       default='Forschungsschiff'
+                       default='Forschungsschiff',
+                       verbose_name="Projektart"
                    )
 
     tags        = models.CharField(
                      max_length=255,
                      blank=True,
-                     help_text="Komma-separierte Schlagworte"
+                     help_text="Komma‑separierte Schlagworte",
+                     verbose_name="Schlagworte"
                   )
-    description = models.TextField()
-    solution    = models.TextField(blank=True)
-    impact      = models.TextField(blank=True)
-    attachment  = models.FileField(upload_to="attachments/", blank=True, null=True)
-    created_by  = models.ForeignKey(User, on_delete=models.CASCADE)
-    created_at  = models.DateTimeField(auto_now_add=True)
+    description = models.TextField(verbose_name="Beschreibung")
+    solution    = models.TextField(blank=True, verbose_name="Lösung")
+    impact      = models.TextField(blank=True, verbose_name="Auswirkung")
+    attachment  = models.FileField(
+                     upload_to="attachments/",
+                     blank=True,
+                     null=True,
+                     verbose_name="Anhang"
+                  )
+    created_at  = models.DateTimeField(auto_now_add=True, verbose_name="Erstellt am")
 
     def __str__(self):
         return self.title
 
     @property
     def tag_list(self):
+        """
+        Gibt die Schlagworte als Liste zurück.
+        """
         if not self.tags:
             return []
         return [t.strip() for t in self.tags.split(",")]
 
 
 class TicketComment(models.Model):
-    ticket      = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name="comments")
-    created_by  = models.ForeignKey(User, on_delete=models.CASCADE)
-    message     = models.TextField()
-    created_at  = models.DateTimeField(auto_now_add=True)
+    ticket     = models.ForeignKey(
+                     Ticket,
+                     on_delete=models.CASCADE,
+                     related_name="comments",
+                     verbose_name="Ticket"
+                 )
+    created_by = models.ForeignKey(
+                     User,
+                     on_delete=models.CASCADE,
+                     verbose_name="Kommentar von"
+                 )
+    message    = models.TextField(verbose_name="Nachricht")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Erstellt am")
 
     def __str__(self):
         return f"Kommentar von {self.created_by} am {self.created_at:%d.%m.%Y}"
-
-class TicketForm(forms.ModelForm):
-    class Meta:
-        model = Ticket
-        fields = [
-            'title', 'role', 'category', 'subcategory',
-            'type', 'project', 'project_type',
-            'tags', 'description', 'solution', 'impact', 'attachment'
-        ]
-        widgets = {
-            'role':         forms.Select(),
-            'category':     forms.Select(),
-            'subcategory':  forms.Select(),
-            'type':         forms.Select(),
-            'project':      forms.Select(),
-            'project_type': forms.Select(),
-        }

@@ -1,15 +1,16 @@
-# tickets/forms.py
 from django import forms
 from .models import Ticket, TicketComment
 
 class TicketForm(forms.ModelForm):
     class Meta:
-        model = Ticket
+        model  = Ticket
         fields = [
+            'creator_name',  # unbedingt hier aufnehmen!
             'title',
             'role',
             'category',
             'subcategory',
+            'type',
             'project',
             'project_type',
             'tags',
@@ -18,8 +19,8 @@ class TicketForm(forms.ModelForm):
             'impact',
             'attachment',
         ]
-
         labels = {
+            'creator_name': 'Name des Erstellers',
             'title':        'Titel',
             'role':         'Rolle',
             'category':     'Kategorie',
@@ -33,23 +34,23 @@ class TicketForm(forms.ModelForm):
             'impact':       'Auswirkung',
             'attachment':   'Anhang',
         }
-
         widgets = {
-            # Dropdown-Widgets für alle Choice-Felder:
+            'creator_name': forms.TextInput(attrs={
+                'class': 'w-full p-2 border rounded',
+                'placeholder': '(Pflichtfeld)',
+            }),
             'role':         forms.Select(attrs={'class': 'p-2 border rounded w-full'}),
             'category':     forms.Select(attrs={'class': 'p-2 border rounded w-full'}),
             'subcategory':  forms.Select(attrs={'class': 'p-2 border rounded w-full'}),
             'type':         forms.Select(attrs={'class': 'p-2 border rounded w-full'}),
             'project':      forms.Select(attrs={'class': 'p-2 border rounded w-full'}),
             'project_type': forms.Select(attrs={'class': 'p-2 border rounded w-full'}),
-
-            # Rest bleibt wie gehabt:
-            'tags':         forms.HiddenInput(),  # weil Du ein Custom-Widget baust
+            'tags':         forms.HiddenInput(),
             'description':  forms.Textarea(attrs={'class': 'p-2 border rounded w-full h-32'}),
             'solution':     forms.Textarea(attrs={'class': 'p-2 border rounded w-full h-32'}),
             'impact':       forms.Textarea(attrs={'class': 'p-2 border rounded w-full h-32'}),
-            # attachment bleibt das Default-FileInput
         }
+
 
 class CommentForm(forms.ModelForm):
     class Meta:
