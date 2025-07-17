@@ -78,13 +78,22 @@ class TicketForm(forms.ModelForm):
         }
 
 class CommentForm(forms.ModelForm):
+    author_name = forms.CharField(
+        required=False,
+        label="Name (optional)",
+        widget=forms.TextInput(attrs={
+            "placeholder": "Dein Name (leer für ‚Anonym‘)",
+            "class": "w-full p-2 border rounded focus:ring-2 focus:ring-indigo-200"
+        })
+    )
+
     class Meta:
-        model = TicketComment
-        fields = ["message"]
+        model  = TicketComment
+        fields = ["author_name", "message"]
         widgets = {
             "message": forms.Textarea(attrs={
                 "placeholder": "Hier deinen Kommentar eingeben…",
-                "class": "w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition",
-                "rows": 4
+                "class": "w-full p-2 border rounded focus:ring-2 focus:ring-indigo-200",
+                "rows": 4,
             }),
         }

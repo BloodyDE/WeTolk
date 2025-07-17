@@ -47,11 +47,18 @@
   </nav>
 
   <!-- Rechte Spalte: Detail-Pane -->
-  <section id="detail-pane" class="w-2/3 p-8 overflow-y-auto">
-    <div class="h-full flex items-center justify-center text-gray-500 italic">
-      Wähle links ein Knowledge aus, um die Details hier anzuzeigen… 🧠
-    </div>
-  </section>
+<section id="detail-pane" class="w-2/3 p-8 overflow-y-auto">
+  <div id="snippet-container-{{ initial_ticket.pk|default:0 }}">
+    {% if initial_ticket %}
+      {% include "tickets/ticket_snippet.html"
+         with ticket=initial_ticket comment_form=comment_form %}
+    {% else %}
+      <div class="h-full flex items-center justify-center text-gray-500 italic">
+        Wähle links ein Knowledge aus, um die Details hier anzuzeigen… 🧠
+      </div>
+    {% endif %}
+  </div>
+</section>>
 
 </div>
 {% endblock %}

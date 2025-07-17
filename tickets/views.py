@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponseBadRequest
 from django.views.decorators.http import require_POST
 
-from .models import Ticket
+from .models import Ticket, TicketComment
 from .forms import TicketForm, CommentForm
 
 
@@ -58,10 +58,15 @@ def ticket_snippet(request, pk):
         form = CommentForm(request.POST)
         if form.is_valid():
             comment = form.save(commit=False)
+            # Wenn kein Name eingegeben, Default "Anonym" greift durch Model-Default
+            if not comment.author_name.strip():
+                comment.author_name = "Anonym"
             comment.ticket = ticket
-            comment.created_by = request.user
             comment.save()
-        # nach dem Speichern den aktualisierten Kommentar‑Snippet zurückliefern
+        return render(request, "tickets/ticket_snippet.html", {
+            "ticket": ticket,
+            "comment_form": CommentForm(),  # frisches Formular
+        })
     else:
         form = CommentForm()
     return render(request, "tickets/ticket_snippet.html", {

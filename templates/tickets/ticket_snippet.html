@@ -1,107 +1,90 @@
-{# templates/tickets/ticket_snippet.html #}
 {% load widget_tweaks %}
 
-<h1 class="text-2xl font-bold text-indigo-700 mb-2">{{ ticket.title }}</h1
+{# templates/tickets/ticket_snippet.html #}
+<div id="snippet-container-{{ ticket.pk }}">
 
-<div class="p-6 bg-white bg-opacity-90 rounded-2xl shadow-lg">
+  <div class="p-4 bg-white rounded shadow mb-4">
+    <h2 class="text-2xl font-bold text-indigo-700 mb-2">{{ ticket.title }}</h2>
+    <p class="text-sm text-gray-600">{{ ticket.creator_name }} • {{ ticket.created_at|date:"d.m.Y H:i" }}</p>
+    <dl class="mt-4 space-y-3">
+      <div><dt class="font-semibold">Kategorie:</dt><dd>{{ ticket.category }} → {{ ticket.subcategory }}</dd></div>
+      <div><dt class="font-semibold">Projekt:</dt><dd>{{ ticket.project }} ({{ ticket.project_type }})</dd></div>
+      {% if ticket.tag_list %}
+      <div><dt class="font-semibold">🏷️ Schlagworte:</dt><dd class="flex flex-wrap gap-2">
+        {% for tag in ticket.tag_list %}
+          <span class="bg-indigo-100 text-indigo-800 px-2 py-1 rounded mr-1">{{ tag }}</span>
+        {% endfor %}
+      </dd></div>
+      {% endif %}
+    </dl>
 
-  <!-- Titel -->
-  <h1 class="text-2xl font-bold text-indigo-700 mb-4">
-    {{ ticket.title }}
-  </h1>
-
-  <!-- Metadaten -->
-  <div class="text-sm text-gray-600 mb-6 space-y-1">
-    <p class="text-sm text-gray-600 mb-4"> 👤 Erstellt von: {{ ticket.creator_name }}  &bull; am {{ ticket.created_at|date:"d.m.Y H:i" }}</p>
-    <div>📂 Kategorie: {{ ticket.category }} → {{ ticket.subcategory }}</div>
-    <div>🏗️ Projekt: {{ ticket.project }} ({{ ticket.project_type }})</div>
-  </div>
-
-  <!-- Schlagworte -->
-  {% if ticket.tag_list %}
-  <div class="mb-6">
-    <span class="font-semibold text-indigo-600">🏷️ Schlagworte:</span>
-    <span class="inline-block ml-2 text-gray-800">
-      {% for tag in ticket.tag_list %}
-        <span class="bg-indigo-100 text-indigo-800 px-2 py-1 rounded mr-1">{{ tag }}</span>
-      {% endfor %}
-    </span>
-  </div>
-  {% endif %}
-
-  <!-- Beschreibung -->
-  <div class="mb-6">
-    <h2 class="font-semibold text-gray-800 mb-2">📋 Beschreibung</h2>
-    <div class="whitespace-pre-wrap text-gray-700">
-      {{ ticket.description }}
+    <div class="mt-4">
+      <h3 class="font-semibold text-gray-800 mb-1">📋 Beschreibung</h3>
+      <p class="whitespace-pre-wrap text-gray-700">{{ ticket.description }}</p>
     </div>
-  </div>
 
-  <!-- Lösung -->
-  {% if ticket.solution %}
-  <div class="mb-6">
-    <h2 class="font-semibold text-gray-800 mb-2">💡 Lösung</h2>
-    <div class="whitespace-pre-wrap text-gray-700">
-      {{ ticket.solution }}
+    {% if ticket.solution %}
+    <div class="mt-4">
+      <h3 class="font-semibold text-gray-800 mb-1">💡 Lösung</h3>
+      <p class="whitespace-pre-wrap text-gray-700">{{ ticket.solution }}</p>
     </div>
-  </div>
-  {% endif %}
+    {% endif %}
 
-  <!-- Auswirkungen -->
-  {% if ticket.impact %}
-  <div class="mb-6">
-    <h2 class="font-semibold text-gray-800 mb-2">⚡ Auswirkungen</h2>
-    <div class="whitespace-pre-wrap text-gray-700">
-      {{ ticket.impact }}
+    {% if ticket.impact %}
+    <div class="mt-4">
+      <h3 class="font-semibold text-gray-800 mb-1">⚡ Auswirkungen</h3>
+      <p class="whitespace-pre-wrap text-gray-700">{{ ticket.impact }}</p>
     </div>
-  </div>
-  {% endif %}
+    {% endif %}
 
-  <!-- Anhang zum Download -->
-  {% if ticket.attachment %}
-  <div class="mb-6">
-    <h2 class="font-semibold text-gray-800 mb-2">📎 Anhang</h2>
-    <a href="{{ ticket.attachment.url }}" download
-       class="text-indigo-600 hover:underline">
-      {{ ticket.attachment.name|cut:"attachments/" }}
-    </a>
+    {% if ticket.attachment %}
+    <div class="mt-4">
+      <h3 class="font-semibold text-gray-800 mb-1">📎 Anhang</h3>
+      <a href="{{ ticket.attachment.url }}" download class="text-indigo-600 hover:underline">
+        {{ ticket.attachment.name|cut:"attachments/" }}
+      </a>
+    </div>
+    {% endif %}
   </div>
-  {% endif %}
 
-  <!-- Kommentare -->
-  <div class="mb-6 border-t pt-4">
-    <h2 class="text-xl font-bold text-indigo-700 mb-4">💬 Kommentare</h2>
-    {% for comment in ticket.comments.all %}
-      <div class="mb-4">
-        <div class="text-sm text-gray-600">
-          {{ comment.created_at|date:"d.m.Y H:i" }} – {{ comment.created_by.username }}
-        </div>
-        <div class="ml-4 text-gray-800 whitespace-pre-wrap">
-          {{ comment.message }}
-        </div>
-      </div>
+  {# Kommentare auflisten #}
+  <ul class="space-y-4 mb-6">
+    {% for c in ticket.comments.all %}
+      <li class="p-4 bg-gray-50 rounded">
+        <p class="text-sm text-gray-600">{{ c.author_name }} • {{ c.created_at|date:"d.m.Y H:i" }}</p>
+        <p class="mt-2 whitespace-pre-wrap">{{ c.message }}</p>
+      </li>
     {% empty %}
-      <div class="text-gray-600 italic">Noch keine Kommentare.</div>
+      <li class="italic text-gray-500">Bisher keine Kommentare.</li>
     {% endfor %}
-  </div>
+  </ul>
 
-  <!-- Kommentar-Formular -->
-  <div class="border-t pt-4">
-    <h2 class="text-xl font-bold text-indigo-700 mb-4">💬 Kommentar hinzufügen</h2>
-    <form method="post"
-          hx-post="{% url 'tickets:ticket_snippet' ticket.pk %}"
-          hx-swap="innerHTML"
-          hx-target="#detail-pane"
-          class="space-y-4">
-      {% csrf_token %}
-      {{ comment_form.non_field_errors }}
+  {# Neues Kommentar-Formular #}
+  <h3 class="text-xl font-semibold mb-2">Neuen Kommentar hinzufügen</h3>
+  <form
+    method="post"
+    hx-post="{% url 'tickets:ticket_snippet' ticket.pk %}"
+    hx-target="#snippet-container-{{ ticket.pk }}"
+    hx-swap="outerHTML"
+    class="space-y-4"
+  >
+    {% csrf_token %}
+
+    <div>
+      {{ comment_form.author_name.label_tag }}
+      {{ comment_form.author_name|add_class:"w-full p-2 border rounded focus:ring-2 focus:ring-indigo-200" }}
+      {{ comment_form.author_name.errors }}
+    </div>
+
+    <div>
       {{ comment_form.message.label_tag }}
-      {{ comment_form.message|add_class:"w-full p-2 border rounded h-24 focus:ring-4 focus:ring-indigo-200" }}
-      <button type="submit"
-              class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">
-        Senden
-      </button>
-    </form>
-  </div>
+      {{ comment_form.message|add_class:"w-full p-2 border rounded focus:ring-2 focus:ring-indigo-200" }}
+      {{ comment_form.message.errors }}
+    </div>
+
+    <button type="submit" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
+      Senden
+    </button>
+  </form>
 
 </div>

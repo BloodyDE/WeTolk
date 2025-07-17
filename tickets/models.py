@@ -118,3 +118,16 @@ class TicketComment(models.Model):
 
     def __str__(self):
         return f"Kommentar von {self.created_by} am {self.created_at:%d.%m.%Y}"
+
+class TicketComment(models.Model):
+    ticket      = models.ForeignKey(Ticket, related_name="comments", on_delete=models.CASCADE)
+    author_name = models.CharField(
+        max_length=100,
+        default="Anonym",
+        help_text="Dein Name oder leer lassen für ‚Anonym‘",
+    )
+    message     = models.TextField()
+    created_at  = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.author_name} on {self.ticket}"
