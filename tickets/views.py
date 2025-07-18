@@ -3,7 +3,7 @@ from django.db.models import Q
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseBadRequest
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods, require_POST
 
 from .models import Ticket, TicketComment
 from .forms import TicketForm, CommentForm
@@ -22,7 +22,9 @@ class TicketListView(ListView):
     context_object_name = "ticket_list"
 
     def get_queryset(self):
-        qs = super().get_queryset().order_by('category', 'subcategory', 'created_at')
+        qs = super().get_queryset().order_by(
+            'category', 'subcategory', 'created_at'
+        )
         q = self.request.GET.get('q', '').strip()
         if q:
             qs = qs.filter(
@@ -42,12 +44,9 @@ class TicketListView(ListView):
         ctx['ticket_tree'] = tree
         # Suchbegriff zurückgeben
         ctx['query'] = self.request.GET.get('q', '')
-        # Erstes Ticket und CommentForm für Detail-Pane
-        first = ctx['object_list'].first() if hasattr(ctx['object_list'], 'first') else (
-            ctx['object_list'][0] if ctx['object_list'] else None
-        )
-        ctx['initial_ticket'] = first
-        ctx['comment_form'] = CommentForm()
+        # Initial kein Ticket vorauswählen
+        ctx['initial_ticket'] = None
+        ctx['comment_form'] = None
         return ctx
 
 
@@ -62,8 +61,6 @@ class TicketDetailView(DetailView):
         return ctx
 
 
-from django.views.decorators.http import require_http_methods
-
 @require_http_methods(["GET", "POST"])
 def ticket_snippet(request, pk):
     ticket = get_object_or_404(Ticket, pk=pk)
@@ -72,16 +69,17 @@ def ticket_snippet(request, pk):
         if form.is_valid():
             comment = form.save(commit=False)
             if not comment.author_name.strip():
-                comment.author_name = "Anonym"
+                comment.author_name = 'Anonym'
             comment.ticket = ticket
             comment.save()
-        # Nach POST weiterhin das aktualisierte Snippet zurückgeben
+        # nach POST weitergeben
     else:
         form = CommentForm()
     return render(request, "tickets/ticket_snippet.html", {
-        "ticket": ticket,
-        "comment_form": form,
+        'ticket': ticket,
+        'comment_form': form,
     })
+
 
 @require_POST
 def preview_bullet(request):

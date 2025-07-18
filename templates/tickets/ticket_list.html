@@ -59,15 +59,11 @@
     </nav>
   </aside>
 
-  <!-- Rechte Spalte: Detail-Pane -->
+    <!-- Rechte Spalte: Detail-Pane -->
   <section id="detail-pane" class="w-2/3 p-8 overflow-y-auto">
-    {% if initial_ticket %}
-      {% include "tickets/ticket_snippet.html" with ticket=initial_ticket comment_form=comment_form %}
-    {% else %}
-      <div class="h-full flex items-center justify-center italic text-gray-500">
-        Wähle links ein Knowledge aus… 🧠
-      </div>
-    {% endif %}
+    <div class="h-full flex items-center justify-center italic text-gray-500">
+      Wähle links ein Knowledge aus… 🧠
+    </div>
   </section>
 </div>
 {% endblock %}
@@ -80,9 +76,9 @@
       const link = e.target.closest('.ticket-link');
       if (!link) return;
       nav.querySelectorAll('.ticket-link').forEach(l => {
-        l.classList.remove('bg-indigo-100','font-semibold','border-l-4','border-indigo-500');
+        l.classList.remove('bg-indigo-100', 'font-semibold', 'border-l-4', 'border-indigo-500');
       });
-      link.classList.add('bg-indigo-100','font-semibold','border-l-4','border-indigo-500');
+      link.classList.add('bg-indigo-100', 'font-semibold', 'border-l-4', 'border-indigo-500');
     });
   });
 </script>
