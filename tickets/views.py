@@ -1,7 +1,7 @@
-# tickets/views.py
 from django.views.generic import CreateView, ListView, DetailView
+from django.db.models import Q
 from django.urls import reverse_lazy
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseBadRequest
 from django.views.decorators.http import require_POST
 
@@ -10,9 +10,6 @@ from .forms import TicketForm, CommentForm
 
 
 class TicketCreateView(CreateView):
-    """
-    Zeigt das Formular zum Anlegen eines neuen Tickets und speichert es ab.
-    """
     model = Ticket
     form_class = TicketForm
     template_name = "tickets/ticket_form.html"
@@ -20,53 +17,65 @@ class TicketCreateView(CreateView):
 
 
 class TicketListView(ListView):
-    """
-    Zeigt alle Tickets in einer Baum‑Ansicht nach Kategorie → Unterkategorie.
-    """
     model = Ticket
     template_name = "tickets/ticket_list.html"
     context_object_name = "ticket_list"
 
+    def get_queryset(self):
+        qs = super().get_queryset().order_by('category', 'subcategory', 'created_at')
+        q = self.request.GET.get('q', '').strip()
+        if q:
+            qs = qs.filter(
+                Q(title__icontains=q) |
+                Q(tags__icontains=q)
+            )
+        return qs
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
+        # Baumstruktur erstellen
         tree = {}
-        for t in ctx["object_list"]:
+        for t in ctx['object_list']:
             tree.setdefault(t.category, {}) \
                 .setdefault(t.subcategory, []) \
                 .append(t)
-        ctx["ticket_tree"] = tree
+        ctx['ticket_tree'] = tree
+        # Suchbegriff zurückgeben
+        ctx['query'] = self.request.GET.get('q', '')
+        # Erstes Ticket und CommentForm für Detail-Pane
+        first = ctx['object_list'].first() if hasattr(ctx['object_list'], 'first') else (
+            ctx['object_list'][0] if ctx['object_list'] else None
+        )
+        ctx['initial_ticket'] = first
+        ctx['comment_form'] = CommentForm()
         return ctx
 
 
 class TicketDetailView(DetailView):
-    """
-    Detailansicht für ein einzelnes Ticket (Fallback, wenn kein HTMX‑Snippet verwendet wird).
-    """
     model = Ticket
     template_name = "tickets/ticket_detail.html"
     context_object_name = "ticket"
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["comment_form"] = CommentForm()
+        ctx['comment_form'] = CommentForm()
         return ctx
 
 
+from django.views.decorators.http import require_http_methods
+
+@require_http_methods(["GET", "POST"])
 def ticket_snippet(request, pk):
     ticket = get_object_or_404(Ticket, pk=pk)
     if request.method == "POST":
         form = CommentForm(request.POST)
         if form.is_valid():
             comment = form.save(commit=False)
-            # Wenn kein Name eingegeben, Default "Anonym" greift durch Model-Default
             if not comment.author_name.strip():
                 comment.author_name = "Anonym"
             comment.ticket = ticket
             comment.save()
-        return render(request, "tickets/ticket_snippet.html", {
-            "ticket": ticket,
-            "comment_form": CommentForm(),  # frisches Formular
-        })
+        # Nach POST weiterhin das aktualisierte Snippet zurückgeben
     else:
         form = CommentForm()
     return render(request, "tickets/ticket_snippet.html", {
@@ -74,14 +83,9 @@ def ticket_snippet(request, pk):
         "comment_form": form,
     })
 
-
 @require_POST
 def preview_bullet(request):
-    """
-    HTMX‑Endpoint: Nimmt im POST‑Body das Feld 'text' und
-    rendert daraus eine ul.list-disc via _bullet_list.html.
-    """
-    text = request.POST.get("text", "")
+    text = request.POST.get('text', '')
     if not text.strip():
-        return HttpResponseBadRequest("Kein Text übergeben.")
-    return render(request, "tickets/_bullet_list.html", {"text": text})
+        return HttpResponseBadRequest('Kein Text übergeben.')
+    return render(request, 'tickets/_bullet_list.html', {'text': text})

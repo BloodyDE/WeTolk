@@ -1,74 +1,83 @@
-{# templates/tickets/ticket_list.html #}
 {% extends "base.html" %}
 {% block title %}📂 Alle Knowledges – Knowledge Base{% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto h-[80vh] flex bg-white/30 backdrop-blur-md rounded-2xl overflow-hidden shadow-xl">
+  <!-- Linke Spalte: Suchfeld & Baum-Ansicht -->
+  <aside class="w-1/3 border-r border-white/40 p-6 flex flex-col">
+    <!-- Suchformular -->
+    <form method="get" class="mb-4">
+      <div class="flex">
+        <input
+          type="text"
+          name="q"
+          value="{{ query }}"
+          placeholder="Suche Titel oder Schlagwort…"
+          class="flex-1 p-2 rounded-l border border-gray-300 focus:ring-2 focus:ring-indigo-200"
+        />
+        <button type="submit" class="px-4 bg-indigo-500 text-white rounded-r hover:bg-indigo-600">
+          🔍
+        </button>
+      </div>
+    </form>
 
-  <!-- Linke Spalte: Baum-Ansicht -->
-  <nav class="w-1/3 border-r border-white/40 p-6 overflow-y-auto">
-    <h2 class="text-2xl font-bold text-indigo-700 mb-4 flex items-center gap-2">
-      <span>🗂️</span> Kategorien
-    </h2>
-    <ul class="space-y-4 list-none">
-      {% for category, subcats in ticket_tree.items %}
-        <li>
-          <span class="block text-lg font-semibold text-teal-600">{{ category }}</span>
-          <ul class="ml-4 space-y-2 list-none">
-            {% for subcategory, tickets in subcats.items %}
-              <li>
-                <span class="block text-indigo-700 font-medium">{{ subcategory }}</span>
-                <ul class="ml-4 space-y-1 list-none">
-                  {% for ticket in tickets %}
-                    <li>
-                      <a
-                        hx-get="{% url 'tickets:ticket_snippet' ticket.pk %}"
-                        hx-target="#detail-pane"
-                        hx-swap="innerHTML"
-                        class="ticket-link flex justify-between items-center
-                               px-3 py-2 rounded hover:bg-indigo-50 transition"
-                      >
-                        <span>🎫 {{ ticket.title }}</span>
-                        <time class="text-gray-400 text-xs">
-                          {{ ticket.created_at|date:"d.m.Y" }}
-                        </time>
-                      </a>
-                    </li>
-                  {% endfor %}
-                </ul>
-              </li>
-            {% endfor %}
-          </ul>
-        </li>
-      {% empty %}
-        <li class="text-gray-600 italic">Noch keine Knowledges vorhanden.</li>
-      {% endfor %}
-    </ul>
-  </nav>
+    <!-- Baum-Ansicht -->
+    <nav class="overflow-y-auto flex-1">
+      <h2 class="text-2xl font-bold text-indigo-700 mb-4 flex items-center gap-2">
+        <span>🗂️</span> Kategorien
+      </h2>
+      <ul class="space-y-2">
+        {% for category, subcats in ticket_tree.items %}
+          <li>
+            <strong class="text-lg text-teal-600">{{ category }}</strong>
+            <ul class="ml-4 space-y-1">
+              {% for subcat, tickets in subcats.items %}
+                <li>
+                  <em class="text-indigo-700">{{ subcat }}</em>
+                  <ul class="ml-4 space-y-1">
+                    {% for ticket in tickets %}
+                      <li>
+                        <a
+                          hx-get="{% url 'tickets:ticket_snippet' ticket.pk %}"
+                          hx-target="#detail-pane"
+                          hx-swap="innerHTML"
+                          class="ticket-link block px-3 py-2 rounded hover:bg-indigo-50 transition"
+                        >
+                          {{ ticket.title }}
+                        </a>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </li>
+              {% endfor %}
+            </ul>
+          </li>
+        {% empty %}
+          <li class="italic text-gray-600">Keine Einträge gefunden.</li>
+        {% endfor %}
+      </ul>
+    </nav>
+  </aside>
 
   <!-- Rechte Spalte: Detail-Pane -->
-<section id="detail-pane" class="w-2/3 p-8 overflow-y-auto">
-  <div id="snippet-container-{{ initial_ticket.pk|default:0 }}">
+  <section id="detail-pane" class="w-2/3 p-8 overflow-y-auto">
     {% if initial_ticket %}
-      {% include "tickets/ticket_snippet.html"
-         with ticket=initial_ticket comment_form=comment_form %}
+      {% include "tickets/ticket_snippet.html" with ticket=initial_ticket comment_form=comment_form %}
     {% else %}
-      <div class="h-full flex items-center justify-center text-gray-500 italic">
-        Wähle links ein Knowledge aus, um die Details hier anzuzeigen… 🧠
+      <div class="h-full flex items-center justify-center italic text-gray-500">
+        Wähle links ein Knowledge aus… 🧠
       </div>
     {% endif %}
-  </div>
-</section>>
-
+  </section>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const nav = document.querySelector('nav');
-    nav.addEventListener('click', event => {
-      const link = event.target.closest('.ticket-link');
+    const nav = document.querySelector('aside nav');
+    nav.addEventListener('click', e => {
+      const link = e.target.closest('.ticket-link');
       if (!link) return;
       nav.querySelectorAll('.ticket-link').forEach(l => {
         l.classList.remove('bg-indigo-100','font-semibold','border-l-4','border-indigo-500');
