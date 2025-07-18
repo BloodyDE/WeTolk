@@ -58,17 +58,17 @@ class TicketForm(forms.ModelForm):
 
             # Textareas mit Placeholder
             "description": forms.Textarea(attrs={
-                "placeholder": "Problem hier beschreiben…",
+                "placeholder": "Problem hier beschreiben… Enter Drücken für Bulletpoints",
                 "class": "w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition",
                 "rows": 4
             }),
             "solution": forms.Textarea(attrs={
-                "placeholder": "Lösungsidee hier skizzieren…",
+                "placeholder": "Lösungsidee hier skizzieren… Enter Drücken für Bulletpoints",
                 "class": "w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition",
                 "rows": 4
             }),
             "impact": forms.Textarea(attrs={
-                "placeholder": "Auswirkungen erläutern…",
+                "placeholder": "Auswirkungen erläutern… Enter Drücken für Bulletpoints",
                 "class": "w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition",
                 "rows": 4
             }),
