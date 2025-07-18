@@ -64,18 +64,18 @@
         {{ form.subcategory.errors }}
       </div>
 
-      <!-- Projekt -->
-      <div>
-        {{ form.project.label_tag }}
-        {{ form.project|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
-        {{ form.project.errors }}
-      </div>
-
       <!-- Projekttyp -->
       <div>
         {{ form.project_type.label_tag }}
         {{ form.project_type|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
         {{ form.project_type.errors }}
+      </div>
+
+      <!-- Projekt -->
+      <div>
+        {{ form.project.label_tag }}
+        {{ form.project|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+        {{ form.project.errors }}
       </div>
 
       <!-- NEU: Art (type) -->
@@ -152,6 +152,16 @@
 {% endblock content %}
 
 {% block extra_js %}
+
+<script>
+  const subcatsByCategory = {
+    'Beleuchtungssysteme': ['Beleuchtungstreiber','Leuchten'],
+    'Kabelanlage':          ['Kabelschirmung','Kabelbahn'],
+    'Automation':           ['BUS-Systeme','SPS/DPU'],
+    'ILS':                  ['Sparepart Analysis','Logistic-Support Analysis'],
+  };
+</script>
+
 <script>
 // Schlagworte‑Chips
 document.addEventListener('DOMContentLoaded', function() {
@@ -231,5 +241,28 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 });
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const catSelect = document.getElementById('id_category');
+    const subcatSelect = document.getElementById('id_subcategory');
+
+    function updateSubcategories() {
+      const allowed = subcatsByCategory[catSelect.value] || [];
+      Array.from(subcatSelect.options).forEach(opt => {
+        const ok = allowed.includes(opt.value);
+        opt.disabled = !ok;
+        opt.hidden = !ok;
+      });
+      if (!allowed.includes(subcatSelect.value)) {
+        subcatSelect.value = allowed[0] || '';
+      }
+    }
+
+    catSelect.addEventListener('change', updateSubcategories);
+    // Beim Laden einmal aufrufen
+    updateSubcategories();
+  });
 </script>
 {% endblock extra_js %}
