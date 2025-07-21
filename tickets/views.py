@@ -4,6 +4,7 @@ from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseBadRequest
 from django.views.decorators.http import require_http_methods, require_POST
+from django.views.generic import TemplateView
 
 from .models import Ticket, TicketComment
 from .forms import TicketForm, CommentForm
@@ -87,3 +88,6 @@ def preview_bullet(request):
     if not text.strip():
         return HttpResponseBadRequest('Kein Text übergeben.')
     return render(request, 'tickets/_bullet_list.html', {'text': text})
+
+class PrivacyView(TemplateView):
+    template_name = 'privacy.html'

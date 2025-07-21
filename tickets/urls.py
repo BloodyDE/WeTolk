@@ -1,12 +1,14 @@
 # tickets/urls.py
 
 from django.urls import path
+from . import views
 from .views import (
     TicketListView,
     TicketCreateView,
     TicketDetailView,
     ticket_snippet,
     preview_bullet,
+    
 )
 
 app_name = "tickets"
@@ -46,4 +48,7 @@ urlpatterns = [
         preview_bullet,
         name="preview_bullet"
     ),
+    
+    path(
+        'datenschutz/', views.PrivacyView.as_view(), name='privacy'),
 ]
