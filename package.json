@@ -1,0 +1,23 @@
+{
+  "name": "wetolk",
+  "version": "1.0.0",
+  "description": "> Internes Knowledge- & Ticket-System auf **Django**-Basis – mit strukturierten Eingaben, Tags, Suche, Kommentaren und Dateianhang-Vorschau.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BloodyDE/WeTolk.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BloodyDE/WeTolk/issues"
+  },
+  "homepage": "https://github.com/BloodyDE/WeTolk#readme",
+  "devDependencies": {
+    "tailwindcss": "^4.1.12"
+  }
+}

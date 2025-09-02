@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Knowledge Verzeichnis{% endblock title %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Favicon / App Icons -->
+  <link rel="icon" href="{% static 'icons/favicon.svg' %}" type="image/svg+xml">
+  <link rel="alternate icon" href="{% static 'icons/favicon-32.png' %}" sizes="32x32">
+  <link rel="apple-touch-icon" href="{% static 'icons/apple-touch-icon.png' %}">
+
+  <!-- Tailwind: lokal gebaute CSS (kein CDN) -->
+  <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+
+  <!-- (Optional) Google Fonts – nur nutzen, wenn erreichbar -->
+  {# <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet"> #}
+
+  <!-- HTMX (falls genutzt) -->
+  <script src="https://unpkg.com/htmx.org@1.9.2" defer></script>
+
+  <!-- CSRF für HTMX -->
+  <meta name="csrf-token" content="{{ csrf_token }}">
+
+  {% block extra_css %}{% endblock extra_css %}
+
+  <!-- Einheitlicher Stil für Top-Level-Navigation -->
+  <style>
+    /* Nur die direkten Links/summary im Header-Menü,
+       Dropdown-Links bleiben unverändert */
+    header nav > a,
+    header nav > details > summary {
+      color: #4f46e5; /* indigo-600 */
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1.5px;
+    }
+    header nav > a:hover,
+    header nav > details > summary:hover {
+      color: #4338ca; /* indigo-700 */
+    }
+      /* Footer: "WeTolk" dezent grau + unterstrichen */
+  footer a.footer-brand,
+  footer a.footer-brand:visited {
+    color: #6b7280;                 /* gray-600 */
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+  }
+  footer a.footer-brand:hover {
+    color: #4b5563;                 /* gray-700 */
+  }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-blue-100 via-indigo-100 to-teal-200">
+
+  <!-- Header -->
+  <header class="bg-white/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto flex items-center py-4 px-6">
+      <h1 class="text-2xl font-bold text-indigo-700">
+        <a href="{% url 'tickets:home' %}" class="hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-indigo-400 rounded" aria-label="Zur Startseite">WeTolk</a>
+      </h1>
+      <nav class="ml-8 flex items-center space-x-4">
+        <a href="{% url 'tickets:home' %}">Home</a>
+        <a href="{% url 'tickets:ticket_list' %}">Alle Knowledges</a>
+        <a href="{% url 'tickets:ticket_new' %}">Neues Knowledge erstellen</a>
+        <a href="{% url 'tickets:privacy' %}" class="text-indigo-600 hover:underline">Datenschutz</a>
+
+        <details class="relative">
+          <summary class="inline-flex items-center text-indigo-600 hover:underline cursor-pointer">
+            Tools
+            <svg class="ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </summary>
+          <ul class="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded z-10">
+            <li><a href="{% url 'tickets:ticket_download_pass' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Datenbank herunterladen</a></li>
+            <li><a href="{% url 'admin:index' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Adminbereich</a></li>
+            <li><a href="{% url 'weconvert:upload' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Image Converter</a></li>
+          </ul>
+        </details>
+      </nav>
+      <div class="flex-1"></div>
+    </div>
+  </header>
+
+  <!-- Hauptinhalt -->
+  <main class="flex-1 py-6 px-4">
+    {% block content %}{% endblock content %}
+  </main>
+
+  <!-- Footer -->
+<footer class="text-center py-4 text-gray-600 mt-6">
+  © 2025 <a href="{% url 'tickets:privacy' %}" class="footer-brand">WeTolk</a> &nbsp;|&nbsp; created with ❤️
+</footer>
+
+  {% block extra_js %}{% endblock extra_js %}
+
+  <!-- HTMX + CSRF erst nach DOM -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var tokenTag = document.querySelector('meta[name="csrf-token"]');
+      if (tokenTag && window.htmx && document.body) {
+        document.body.addEventListener('htmx:configRequest', function (evt) {
+          evt.detail.headers['X-CSRFToken'] = tokenTag.content;
+        });
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+﻿@import "tailwindcss";
+
+/* Quellen, in denen Tailwind Klassen finden soll */
+@source "../../templates/**/*.html";
+@source "../../**/templates/**/*.html";
+@source "../../**/*.{js,ts,jsx,tsx}";
+@source "../../tickets/templates/**/*.html";
+@source "../../**/*.py"; /* für Klassen in Python-Strings */

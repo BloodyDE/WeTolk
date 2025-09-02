@@ -1,0 +1,524 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}➕ Neues Knowledge{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="https://unpkg.com/@yaireo/tagify/dist/tagify.css">
+
+<style>
+  /* Container: verhindert Stretch auf 100% Breite */
+  .preview-actions { align-items: flex-start; }
+
+  /* Gemeinsamer Button-Stil (kompakt) */
+  .preview-actions button[name="cancel"],
+  .preview-actions button[name="confirm"] {
+    cursor: pointer;
+    border: 0;
+    border-radius: .6rem;      /* kompakter als vorher */
+    padding: .5rem .9rem;
+    font-weight: 600;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 8.5rem;
+    box-shadow: 0 8px 20px -6px rgba(16,24,40,.18);
+    transition: transform .12s ease, box-shadow .2s ease, filter .2s ease, background-position .35s ease;
+    background-size: 200% 100%;
+    will-change: transform;
+  }
+
+  /* Farben/Verläufe */
+  .preview-actions button[name="cancel"] {
+    background-image: linear-gradient(90deg,#ef4444,#dc2626);
+  }
+  .preview-actions button[name="confirm"] {
+    background-image: linear-gradient(90deg,#22c55e,#16a34a);
+  }
+
+  /* Hover-/Active-/Focus-Zustände */
+  .preview-actions button[name="cancel"]:hover,
+  .preview-actions button[name="confirm"]:hover {
+    background-position: 100% 0;
+    transform: translateY(-1px) scale(1.015);
+    box-shadow: 0 12px 26px -10px rgba(16,24,40,.28);
+    filter: brightness(.99);
+  }
+  .preview-actions button[name="cancel"]:active,
+  .preview-actions button[name="confirm"]:active {
+    transform: translateY(0) scale(.99);
+    filter: brightness(.97);
+    transition-duration: .05s;
+  }
+  .preview-actions button[name="cancel"]:focus-visible,
+  .preview-actions button[name="confirm"]:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(99,102,241,.35);
+  }
+
+  /* Sanfter „pop-in“ beim Rendern */
+  .preview-actions button[name="cancel"],
+  .preview-actions button[name="confirm"] {
+    animation: pop-in .22s ease-out both;
+  }
+  .preview-actions button[name="confirm"] { animation-delay: .04s; }
+
+  @keyframes pop-in {
+    from { transform: translateY(6px) scale(.98); opacity: 0; }
+    to   { transform: translateY(0)   scale(1);   opacity: 1; }
+  }
+
+  /* Vorschau-Aktionszeile: mehr Luft & sauber umbrechen */
+.preview-actions{
+  gap: 1rem;           /* größerer Abstand zwischen den Elementen */
+  flex-wrap: wrap;     /* bricht bei wenig Platz in die nächste Zeile um */
+}
+
+/* Der Datei-Button bekommt unten etwas Luft zur Liste */
+.preview-actions .file-upload{ margin-bottom: .25rem; }
+</style>
+
+
+<style>
+  /* Schöner Datei-Button */
+  .file-upload{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+  .file-upload .visually-hidden{
+    position:absolute;left:-9999px; /* echtes Input bleibt zugänglich, aber unsichtbar */
+  }
+  .file-upload .file-btn{
+    cursor:pointer;border:0;border-radius:.75rem;
+    padding:.6rem 1.1rem;font-weight:600;color:#fff;
+    display:inline-flex;align-items:center;gap:.5rem;
+    background:linear-gradient(90deg,#6366f1,#22d3ee,#14b8a6);
+    background-size:200% 100%;
+    box-shadow:0 8px 20px -6px rgba(16,24,40,.18);
+    transition:transform .12s ease,box-shadow .2s ease,background-position .35s ease,filter .2s ease;
+  }
+  .file-upload .file-btn:hover{
+    background-position:100% 0;transform:translateY(-1px) scale(1.012);
+    box-shadow:0 12px 26px -10px rgba(16,24,40,.28);filter:brightness(.99);
+  }
+  .file-upload .file-btn:active{transform:translateY(0) scale(.99);filter:brightness(.97)}
+  .file-upload .file-btn:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(99,102,241,.35)}
+  .file-upload .file-name{color:#374151;font-size:.925rem}
+  .file-upload .file-icon{width:1.05rem;height:1.05rem;opacity:.95}
+
+  /* Primärer Submit-Button (animiert, vollbreit in der Karte) */
+  .primary-submit{
+    cursor:pointer;border:0;border-radius:.9rem;
+    padding:1rem 1.25rem;font-weight:700;color:#fff;width:100%;
+    display:inline-flex;align-items:center;justify-content:center;gap:.6rem;
+    background:linear-gradient(90deg,#6366f1,#22d3ee,#10b981);
+    background-size:200% 100%;
+    box-shadow:0 12px 30px -12px rgba(16,24,40,.35);
+    transition:transform .12s ease,box-shadow .2s ease,background-position .35s ease,filter .2s ease;
+  }
+  .primary-submit:hover{
+    background-position:100% 0;transform:translateY(-1px);
+    box-shadow:0 18px 38px -16px rgba(16,24,40,.42);filter:brightness(.99);
+  }
+  .primary-submit:active{transform:translateY(0);filter:brightness(.98);transition-duration:.05s}
+  .primary-submit:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(99,102,241,.35)}
+</style>
+
+{% endblock extra_css %}
+
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  {% if preview %}
+    <div class="bg-white/70 backdrop-blur rounded-2xl shadow-xl border border-white/40 p-6 md:p-8 space-y-6">
+      <h2 class="text-2xl font-bold text-indigo-700 text-center">Vorschau: Neues Knowledge</h2>
+      <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <dt class="font-medium text-gray-600">Titel</dt>
+          <dd class="mt-1 text-gray-800">{{ preview_data.title }}</dd>
+        </div>
+        <div>
+          <dt class="font-medium text-gray-600">Ersteller</dt>
+          <dd class="mt-1 text-gray-800">{{ preview_data.creator_name }}</dd>
+        </div>
+        <div>
+          <dt class="font-medium text-gray-600">Kategorie</dt>
+          <dd class="mt-1 text-gray-800">{{ preview_data.category }} &rarr; {{ preview_data.subcategory }}</dd>
+        </div>
+        <div>
+          <dt class="font-medium text-gray-600">Projekt</dt>
+          <dd class="mt-1 text-gray-800">{{ preview_data.project_type }}: {{ preview_data.project }}</dd>
+        </div>
+        <div class="md:col-span-2">
+          <dt class="font-medium text-gray-600">Schlagworte</dt>
+          <dd class="mt-1 flex flex-wrap gap-2">
+            {% for tag in preview_data.tags_list %}
+              <span class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm">{{ tag }}</span>
+            {% endfor %}
+            {% if not preview_data.tags_list %}
+              <span class="text-gray-400 italic">Keine Tags</span>
+            {% endif %}
+          </dd>
+        </div>
+        <div class="md:col-span-2">
+          <dt class="font-medium text-gray-600">Beschreibung</dt>
+          <dd class="mt-1 text-gray-800 whitespace-pre-wrap">{{ preview_data.description }}</dd>
+        </div>
+        <div class="md:col-span-2">
+          <dt class="font-medium text-gray-600">Lösung</dt>
+          <dd class="mt-1 text-gray-800 whitespace-pre-wrap">{{ preview_data.solution }}</dd>
+        </div>
+        <div class="md:col-span-2">
+          <dt class="font-medium text-gray-600">Auswirkung</dt>
+          <dd class="mt-1 text-gray-800 whitespace-pre-wrap">{{ preview_data.impact }}</dd>
+        </div>
+<div class="md:col-span-2">
+  <dt class="font-medium text-gray-600">Anhang</dt>
+  <dd class="mt-1 text-gray-800">
+    <span id="preview-attachment-text">
+      {% if preview_data.attachment_name %}
+        <a href="{{ preview_data.attachment_url }}" target="_blank" class="text-indigo-600 underline">
+          {{ preview_data.attachment_name }}
+        </a>
+      {% else %}
+        <span class="text-gray-400 italic">Kein Anhang</span>
+      {% endif %}
+    </span>
+  </dd>
+</div>
+
+      <form method="post" enctype="multipart/form-data"
+      class="preview-actions flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+        {% csrf_token %}
+        {% for key, value in preview_data.items %}
+          {% if key != 'attachment' and key != 'tags_list' and key != 'attachment_url' and key != 'attachment_name' %}
+            <input type="hidden" name="{{ key }}" value="{{ value|default_if_none:''|escape }}">
+          {% endif %}
+        {% endfor %}
+        <input type="hidden" name="attachment_tmp_id" value="{{ attachment_tmp_id }}">
+        <div class="file-upload">
+  {{ form.attachment|add_class:"visually-hidden" }}
+  <label for="{{ form.attachment.id_for_label }}" class="file-btn">
+    <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 12.79V7a5 5 0 00-10 0v9a3 3 0 006 0V8" />
+    </svg>
+    Datei auswählen
+  </label>
+  <span class="file-name">Keine Datei ausgewählt</span>
+</div>
+        <button name="cancel" class="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Rückgängig</button>
+        <button name="confirm" class="px-5 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Fertig</button>
+      </form>
+    </div>
+
+  {% else %}
+    <div class="bg-white/70 backdrop-blur rounded-2xl shadow-xl border border-white/40 p-6 md:p-10">
+      <h1 class="text-3xl font-extrabold text-indigo-700 mb-6 text-center">Neues Knowledge anlegen</h1>
+
+      <form method="post" enctype="multipart/form-data" id="knowledge-form" class="space-y-8">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <!-- 1. Titel & Ersteller -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div class="sm:col-span-2">
+            {{ form.title.label_tag }}
+            {{ form.title|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+            {{ form.title.errors }}
+          </div>
+          <div class="sm:col-span-2">
+            {{ form.creator_name.label_tag }}
+            {{ form.creator_name|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+            {{ form.creator_name.errors }}
+          </div>
+        </div>
+
+        <!-- 2. Metadaten -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div>
+            {{ form.role.label_tag }}
+            {{ form.role|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+            {{ form.role.errors }}
+          </div>
+          <div>
+            {{ form.category.label_tag }}
+            {{ form.category|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+            {{ form.category.errors }}
+          </div>
+          <div>
+            {{ form.subcategory.label_tag }}
+            {{ form.subcategory|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+            {{ form.subcategory.errors }}
+          </div>
+        </div>
+
+        <!-- 2.1 Projektart & Projekt -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div>
+            {{ form.project_type.label_tag }}
+            {{ form.project_type|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+            {{ form.project_type.errors }}
+          </div>
+          <div>
+            <label for="id_project" class="block text-gray-700 font-medium mb-1">Projekt</label>
+            <select id="id_project" name="project" class="w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition"></select>
+            {{ form.project.errors }}
+          </div>
+          <div>
+            {{ form.type.label_tag }}
+            {{ form.type|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+            {{ form.type.errors }}
+          </div>
+        </div>
+
+        <!-- 3. Schlagworte -->
+        <div>
+          <label for="{{ form.tags.id_for_label }}" class="block text-gray-700 font-normal">{{ form.tags.label }}:</label>
+          {{ form.tags.as_hidden }}
+          <div id="tag-input-container" class="mt-1 flex flex-wrap items-center rounded border border-gray-300 bg-white/75 p-2 gap-1 focus-within:ring-2 focus-within:ring-indigo-200">
+            <input id="tag-field" type="text" placeholder="Tag eingeben und Leer/Komma drücken" class="flex-1 min-w-[6rem] p-1 outline-none bg-transparent"/>
+          </div>
+          {{ form.tags.errors }}
+        </div>
+
+<!-- 4. Freitextfelder mit Bullet-Button UNTER dem Feld -->
+<div class="space-y-8">
+  <!-- Beschreibung -->
+  <div>
+    {{ form.description.label_tag }}
+    {{ form.description|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+    <div class="mt-2 flex justify-end">
+      <button
+        type="button"
+        class="inline-flex items-center text-xs font-semibold px-3 py-1 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+        data-target="id_description"
+      >• Bulletpoint einfügen</button>
+    </div>
+    {{ form.description.errors }}
+  </div>
+
+  <!-- Lösung -->
+  <div>
+    {{ form.solution.label_tag }}
+    {{ form.solution|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+    <div class="mt-2 flex justify-end">
+      <button
+        type="button"
+        class="inline-flex items-center text-xs font-semibold px-3 py-1 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+        data-target="id_solution"
+      >• Bulletpoint einfügen</button>
+    </div>
+    {{ form.solution.errors }}
+  </div>
+
+  <!-- Auswirkung -->
+  <div>
+    {{ form.impact.label_tag }}
+    {{ form.impact|add_class:"w-full p-3 rounded border border-gray-300 bg-white/75 focus:ring-2 focus:ring-indigo-200 transition" }}
+    <div class="mt-2 flex justify-end">
+      <button
+        type="button"
+        class="inline-flex items-center text-xs font-semibold px-3 py-1 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+        data-target="id_impact"
+      >• Bulletpoint einfügen</button>
+    </div>
+    {{ form.impact.errors }}
+  </div>
+</div>
+
+<!-- 5. Anhang -->
+<div>
+  {{ form.attachment.label_tag }}
+  <div class="file-upload mt-1">
+    {{ form.attachment|add_class:"visually-hidden" }}
+    <label for="id_attachment" class="file-btn">
+      <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 12.79V7a5 5 0 00-10 0v9a3 3 0 006 0V8" />
+      </svg>
+      Datei auswählen
+    </label>
+    <span id="file-name" class="file-name">Keine Datei ausgewählt</span>
+  </div>
+  {{ form.attachment.errors }}
+</div>
+
+<!-- 6. Prüfen (IM Formular) -->
+<div class="mt-6">
+  <button type="submit" class="primary-submit">
+    <span aria-hidden="true">🧾</span> Formular prüfen
+  </button>
+</div>
+</form>          {# schließt <form id="knowledge-form"> #}
+</div>           {# schließt die weiße Karten-Box #}
+{% endif %}      {# schließt: {% if preview %} #}
+</div>           {# schließt den max-w-Wrapper #}
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+// Subkategorie-Filter
+(function(){
+  const catSelect=document.getElementById('id_category'), subcatSelect=document.getElementById('id_subcategory');
+  const subcatsByCategory={
+    'Beleuchtungssysteme':['Beleuchtungstreiber','Leuchten'],
+    'Kabelanlage':['Kabelschirmung','Kabelbahn'],
+    'Automation':['BUS-Systeme','SPS/DPU'],
+    'ILS':['Sparepart Analysis','Logistic-Support Analysis']
+  };
+  function upd(){
+    const opts=subcatsByCategory[catSelect.value]||[];
+    Array.from(subcatSelect.options).forEach(o=>{
+      o.hidden=!opts.includes(o.value);
+      o.disabled=!opts.includes(o.value);
+    });
+    if(!opts.includes(subcatSelect.value)) subcatSelect.value=opts[0]||'';
+  }
+  if(catSelect && subcatSelect){ catSelect.addEventListener('change',upd); upd(); }
+})();
+</script>
+
+<script>
+(function(){
+    document.querySelectorAll('.file-upload').forEach(function(box){
+      const inp = box.querySelector('input[type="file"]');
+      const nameEl = box.querySelector('.file-name');
+      const tmpId = document.querySelector('input[name="attachment_tmp_id"]'); // nur in der Vorschau vorhanden
+      const previewSlot = document.getElementById('preview-attachment-text');
+
+      if(!inp || !nameEl) return;
+
+      inp.addEventListener('change', () => {
+        const filename = (inp.files && inp.files.length) ? inp.files[0].name : "";
+        // Neuer Upload überschreibt Temp-Anhang
+        if (filename && tmpId) tmpId.value = "";
+
+        // Dateiname neben dem Button
+        nameEl.textContent = filename || "Keine Datei ausgewählt";
+
+        // UND: oben in der „Anhang“-Zeile anzeigen
+        if (filename && previewSlot) {
+          previewSlot.innerHTML =
+            '<span class="inline-flex items-center gap-2">' +
+              '<svg class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">' +
+                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79V7a5 5 0 00-10 0v9a3 3 0 006 0V8"/>' +
+              '</svg>' +
+              '<span>'+ filename +'</span>' +
+              '<span class="ml-2 text-xs text-gray-500">(neu, wird beim Speichern hochgeladen)</span>' +
+            '</span>';
+        }
+      });
+
+      // Initialer Text neben dem Button
+      nameEl.textContent = "Keine Datei ausgewählt";
+    });
+  })();
+</script>
+
+<script>
+// Schlagworte – Chips mit Entfernung per Backspace oder ×
+(function(){
+  const hiddenInput = document.getElementById('id_tags'),
+        field       = document.getElementById('tag-field'),
+        container   = document.getElementById('tag-input-container');
+  if(!hiddenInput||!field||!container) return;
+
+  let tags = hiddenInput.value ? hiddenInput.value.split(',') : [];
+
+  function updateHidden() { hiddenInput.value = tags.join(','); }
+
+  function renderChips() {
+    container.querySelectorAll('span.tag-chip').forEach(el=>el.remove());
+    tags.forEach((tag,i) => {
+      const chip = document.createElement('span');
+      chip.setAttribute('tabindex','0');
+      chip.className = 'tag-chip inline-flex items-center bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full mr-1 mb-1 text-sm';
+      chip.textContent = tag;
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'ml-1 font-bold';
+      btn.textContent = '×';
+      btn.addEventListener('click', () => { tags.splice(i,1); updateHidden(); renderChips(); field.focus(); });
+
+      chip.addEventListener('keydown', e => {
+        if(e.key==='Backspace' || e.key==='Delete') {
+          e.preventDefault(); tags.splice(i,1); updateHidden(); renderChips(); field.focus();
+        }
+      });
+
+      chip.appendChild(btn);
+      container.insertBefore(chip, field);
+    });
+  }
+
+  field.addEventListener('keydown', e => {
+    if((e.key===' '|| e.key===',') && field.value.trim()) {
+      e.preventDefault();
+      const val = field.value.trim();
+      if(val && !tags.includes(val)) tags.push(val);
+      field.value = '';
+      updateHidden(); renderChips();
+    } else if(e.key==='Backspace' && !field.value) {
+      if(tags.length) { tags.pop(); updateHidden(); renderChips(); }
+    }
+  });
+
+  renderChips();
+})();
+</script>
+
+<script>
+// Bulletpoint per Button
+(function(){
+  document.querySelectorAll('button[data-target]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const ta = document.getElementById(btn.getAttribute('data-target'));
+      if(!ta) return;
+      const pos = ta.selectionStart;
+      const txt = ta.value;
+      const lineStart = txt.lastIndexOf('\n', pos-1) + 1;
+      const bullet = '• ';
+      if(!txt.slice(lineStart).startsWith(bullet)) {
+        ta.value = txt.slice(0, lineStart) + bullet + txt.slice(lineStart);
+        const newPos = lineStart + bullet.length;
+        ta.setSelectionRange(newPos, newPos);
+        ta.focus();
+      }
+    });
+  });
+})();
+</script>
+
+<script>
+// Projektart → Projektfilter
+(function(){
+  const ts = document.getElementById('id_project_type'),
+        ps = document.getElementById('id_project');
+  const mapping = {
+    'Zivil':['BC Ferries'],
+    'Forschungsschiff':['METEOR','Walther Herwig','Sonne'],
+    'Militär':['F126','MEKO Brasilien'],
+    'Offshore':['ELIAMOG']
+  };
+  function update() {
+    const opts = mapping[ts?.value] || [];
+    if(!ps) return;
+    ps.innerHTML = opts.length ? opts.map(n=>`<option value="${n}">${n}</option>`).join('') : '<option value="">-- bitte Projektart wählen --</option>';
+  }
+  if(ts){ ts.addEventListener('change', update); update(); }
+})();
+</script>
+
+<script>
+  (function(){
+    const inp = document.getElementById('id_attachment');
+    const labelText = document.getElementById('file-name');
+    if(!inp || !labelText) return;
+    const update = () => {
+      labelText.textContent = (inp.files && inp.files.length) ? inp.files[0].name : "Keine Datei ausgewählt";
+    };
+    inp.addEventListener('change', update);
+    update();
+  })();
+</script>
+{% endblock extra_js %}

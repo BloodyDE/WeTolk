@@ -1,0 +1,89 @@
+{% load widget_tweaks %}
+
+{# templates/tickets/ticket_snippet.html #}
+<div id="snippet-container-{{ ticket.pk }}" class="ticket-snippet">
+
+  <div class="p-4 bg-white rounded shadow mb-4">
+    <h2 class="text-2xl font-bold text-indigo-700 mb-2">{{ ticket.title }}</h2>
+    <p class="text-sm text-gray-600">{{ ticket.creator_name }} • {{ ticket.created_at|date:"d.m.Y H:i" }}</p>
+    <dl class="mt-4 space-y-3">
+      <div><dt class="font-semibold">Kategorie:</dt><dd>{{ ticket.category }} → {{ ticket.subcategory }}</dd></div>
+      <div><dt class="font-semibold">Projekt:</dt><dd>{{ ticket.project }} ({{ ticket.project_type }})</dd></div>
+      {% if ticket.tag_list %}
+      <div><dt class="font-semibold">🏷️ Schlagworte:</dt><dd class="flex flex-wrap gap-2">
+        {% for tag in ticket.tag_list %}
+          <span class="bg-indigo-100 text-indigo-800 px-2 py-1 rounded mr-1">{{ tag }}</span>
+        {% endfor %}
+      </dd></div>
+      {% endif %}
+    </dl>
+
+    <div class="mt-4">
+      <h3 class="font-semibold text-gray-800 mb-1">📋 Beschreibung</h3>
+      <p class="whitespace-pre-wrap text-gray-700">{{ ticket.description }}</p>
+    </div>
+
+    {% if ticket.solution %}
+    <div class="mt-4">
+      <h3 class="font-semibold text-gray-800 mb-1">💡 Lösung</h3>
+      <p class="whitespace-pre-wrap text-gray-700">{{ ticket.solution }}</p>
+    </div>
+    {% endif %}
+
+    {% if ticket.impact %}
+    <div class="mt-4">
+      <h3 class="font-semibold text-gray-800 mb-1">⚡ Auswirkungen</h3>
+      <p class="whitespace-pre-wrap text-gray-700">{{ ticket.impact }}</p>
+    </div>
+    {% endif %}
+
+    {% if ticket.attachment %}
+    <div class="mt-4">
+      <h3 class="font-semibold text-gray-800 mb-1">📎 Anhang</h3>
+      <a href="{{ ticket.attachment.url }}" download class="text-indigo-600 hover:underline">
+        {{ ticket.attachment.name|cut:"attachments/" }}
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+<div class="ticket-snippet-inner">
+  <ul class="comments-list">
+    {% for c in ticket.comments.all %}
+      <li class="comment-card">
+        <div class="comment-header">
+          <span class="comment-author">{{ c.author_name|default:"Anonym" }}</span>
+          <span class="comment-time">{{ c.created_at|date:"d.m.Y H:i" }}</span>
+        </div>
+        <div class="comment-body">{{ c.message }}</div>
+      </li>
+    {% empty %}
+      <li>Keine Kommentare vorhanden.</li>
+    {% endfor %}
+  </ul>
+
+  <h3 class="text-xl font-semibold mb-2">Neuen Kommentar hinzufügen</h3>
+  <form method="post"
+        action="{% url 'tickets:ticket_detail' ticket.pk %}"
+        hx-post="{% url 'tickets:ticket_snippet' ticket.pk %}"
+        hx-target="#snippet-container-{{ ticket.pk }}"
+        hx-swap="innerHTML"
+        class="comment-form">
+    {% csrf_token %}
+    {{ comment_form.non_field_errors }}
+
+    <div class="row">
+      {{ comment_form.author_name.label_tag }}
+      {{ comment_form.author_name }}
+      {{ comment_form.author_name.errors }}
+    </div>
+
+    <div class="row">
+      {{ comment_form.message.label_tag }}
+      {{ comment_form.message }}
+      {{ comment_form.message.errors }}
+    </div>
+
+    <button type="submit" class="btn-primary">Senden</button>
+  </form>
+</div>
