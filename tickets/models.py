@@ -53,13 +53,8 @@ class Ticket(models.Model):
         ('Sicherheit', 'Sicherheit'),
     ]
 
-    creator_name = models.CharField(
-        "Name des Erstellers",
-        max_length=100,
-        blank=True,
-        null=False,  # kein Null in der DB
-        help_text='Leer lassen für „Anonym“',
-    )
+    creator_name = models.CharField(max_length=80, blank=True)
+
     title = models.CharField(
         max_length=200,
         verbose_name="Titel",
@@ -143,10 +138,10 @@ class TicketComment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Erstellt am")
 
 
-    def save(self, *args, **kwargs):
-        # Nur beim Speichern befüllen, wenn leer/Whitespace
-        self.creator_name = (self.creator_name or "").strip() or "Anonym"
-        super().save(*args, **kwargs)
+
+def save(self, *args, **kwargs):
+    self.creator_name = (self.creator_name or "").strip() or "Anonym"
+    super().save(*args, **kwargs)
 
     def __str__(self):
         ticket_title = self.ticket.title or f"Ticket {self.ticket_id}"
