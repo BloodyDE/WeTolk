@@ -35,6 +35,7 @@
   @keyframes spin{ to{ transform: rotate(360deg); } }
   .wc-label{ font-weight:600; color:#334155; margin-bottom:.5rem; display:block; }
   .primary-submit{ cursor:pointer; } .primary-submit[disabled]{ cursor:not-allowed; }
+  .wc-download{display:inline-block;margin-top:.5rem}
 </style>
 
 <style>
@@ -88,7 +89,7 @@
     <h1 class="wc-title">WeConvert: Bild konvertieren &amp; komprimieren</h1>
 
     {# EINZIGES Formular #}
-    <form id="wc-form" method="post" enctype="multipart/form-data" novalidate>
+    <form id="wc-form" action="{% url 'weconvert:convert' %}" method="post" enctype="multipart/form-data" novalidate>
       {% csrf_token %}
       {{ form.non_field_errors }}
 
@@ -145,6 +146,10 @@
 
       {# --- Absenden --- #}
       <div class="wc-actions">
+        <!-- NEU: Fortschritt + Status + Download -->
+          <progress id="upload-progress" max="100" value="0" hidden class="w-full h-2 mt-2"></progress>
+          <p id="status" class="text-sm text-gray-600 mt-1" role="status" aria-live="polite"></p>
+          <a id="download-link" class="wc-download" hidden>Download</a>
         <button id="wc-submit" type="submit" class="primary-submit">
           <span class="spinner" aria-hidden="true"></span>
           Konvertieren &amp; Download
@@ -233,6 +238,116 @@
   toggleRows();
   updateQualityDisabled();
   updateQualityUI();
+})();
+</script>
+
+<script>
+(function(){
+  const form   = document.getElementById('wc-form');
+  const fileIn = document.getElementById('id_image');
+  const btn    = document.getElementById('wc-submit');
+  const prog   = document.getElementById('upload-progress');
+  const status = document.getElementById('status');
+  const dl     = document.getElementById('download-link');
+  const nameEl = document.getElementById('wc-file-name');
+  const drop   = document.getElementById('wc-drop');
+
+  let isSubmitting = false;
+
+  function setBusy(on){
+    form.classList.toggle('is-busy', !!on); // steuert Spinner + Cursor via CSS
+    btn.disabled = !!on;
+  }
+  function resetDL(){
+    dl.hidden = true; dl.removeAttribute('href'); dl.removeAttribute('download');
+  }
+  function humanName(f){ return f ? f.name : 'Keine Datei ausgewählt'; }
+
+  // Dateiname anzeigen & Button aktivieren
+  function updateFileUI(){
+    const f = fileIn.files[0];
+    nameEl.textContent = humanName(f);
+    btn.disabled = !f;
+    if (f){ status.textContent = 'Bereit zum Konvertieren.'; } else { status.textContent = ''; }
+    resetDL();
+  }
+  fileIn.addEventListener('change', updateFileUI);
+  updateFileUI();
+
+  // (Optional) Drag&Drop für deine Dropzone
+  if (drop){
+    ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev, e=>{ e.preventDefault(); drop.classList.add('is-dragover'); }));
+    ['dragleave','dragend','drop'].forEach(ev=>drop.addEventListener(ev, e=>{ e.preventDefault(); drop.classList.remove('is-dragover'); }));
+    drop.addEventListener('drop', (e)=>{
+      if (e.dataTransfer?.files?.length){
+        fileIn.files = e.dataTransfer.files;
+        fileIn.dispatchEvent(new Event('change'));
+      }
+    });
+  }
+
+  // Submit → XHR (zeigt Fortschritt, verhindert Doppelklick, auto-Download)
+  form.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    if (isSubmitting) return;
+    if (!fileIn.files.length) return;
+
+    isSubmitting = true;
+    setBusy(true);
+    resetDL();
+    status.textContent = 'Vorbereitung…';
+    prog.hidden = false; prog.value = 0;
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', form.action || window.location.href);
+    xhr.responseType = 'blob';
+
+    // Upload-Fortschritt
+    xhr.upload.onprogress = (ev)=>{
+      if (ev.lengthComputable){
+        const pct = Math.round((ev.loaded/ev.total)*100);
+        prog.value = pct;
+        status.textContent = `Lade hoch: ${pct}%`;
+      }
+    };
+
+    xhr.onload = ()=>{
+      if (xhr.status === 200){
+        // Dateiname aus Content-Disposition
+        const disp = xhr.getResponseHeader('Content-Disposition') || '';
+        const m = /filename\*?=(?:UTF-8'')?("?)([^";]+)\1/i.exec(disp);
+        const filename = m ? decodeURIComponent(m[2]) : 'converted.png';
+
+        const url = URL.createObjectURL(xhr.response);
+        dl.href = url; dl.download = filename; dl.textContent = `Download ${filename}`;
+        dl.hidden = false;
+        dl.click(); // Auto-Download
+        setTimeout(()=>URL.revokeObjectURL(url), 10000);
+
+        status.textContent = 'Fertig.';
+      } else {
+        status.textContent = `Fehler: ${xhr.status} – Konvertierung fehlgeschlagen.`;
+      }
+      prog.hidden = true;
+      isSubmitting = false;
+      setBusy(false);
+    };
+
+    xhr.onerror = ()=>{
+      status.textContent = 'Netzwerkfehler beim Upload.';
+      prog.hidden = true;
+      isSubmitting = false;
+      setBusy(false);
+    };
+
+    const fd = new FormData(form); // enthält CSRF + alle Felder (Format, Qualität, Checkboxen)
+    xhr.send(fd);
+  });
+
+  // Schutz vorm Wegklicken während Upload
+  window.addEventListener('beforeunload', (e)=>{
+    if (isSubmitting){ e.preventDefault(); e.returnValue = ''; }
+  });
 })();
 </script>
 {% endblock extra_js %}

@@ -1,73 +1,64 @@
-from django.shortcuts import render
-from django.http import FileResponse, HttpResponseBadRequest
-from .forms import ImageUploadForm
-from PIL import Image
-import io
+# WeConvert/views.py
+from io import BytesIO
 import os
+from django.http import FileResponse, HttpResponseBadRequest
+from django.views.decorators.http import require_POST
+from PIL import Image, ImageFile
 
-def convert_view(request):
-    if request.method == "POST":
-        form = ImageUploadForm(request.POST, request.FILES)
-        if not form.is_valid():
-            return HttpResponseBadRequest("Ungültiges Formular")
+ImageFile.LOAD_TRUNCATED_IMAGES = True  # toleranter bei leicht defekten Dateien
 
-        uploaded = form.cleaned_data["image"]
-        base, _ = os.path.splitext(uploaded.name)
+@require_POST
+def convert_to_png(request):
+    f = request.FILES.get('image')
+    if not f:
+        return HttpResponseBadRequest("No file uploaded.")
 
-        # NEU: optionale Parameter (fallen zurück auf Standardwerte)
-        out_format = (form.cleaned_data.get("out_format") or "PNG").upper()     # PNG | JPEG | WEBP
-        quality = form.cleaned_data.get("quality")
-        try:
-            quality = int(quality) if quality is not None else 85               # 1..100, Default 85
-        except (TypeError, ValueError):
-            quality = 85
-        progressive = bool(form.cleaned_data.get("progressive"))                # nur JPEG sinnvoll
-        lossless_webp = bool(form.cleaned_data.get("lossless_webp"))            # nur WEBP
+    # Formularwerte
+    out_format = (request.POST.get('out_format') or '').upper()  # "PNG" | "JPEG" | "WEBP"
+    try:
+        quality = int(request.POST.get('quality') or 80)
+    except ValueError:
+        quality = 80
+    quality = max(1, min(100, quality))
+    progressive = bool(request.POST.get('progressive'))
+    lossless_webp = bool(request.POST.get('lossless_webp'))
 
-        try:
-            img = Image.open(uploaded)
-            buf = io.BytesIO()
+    # Bild öffnen
+    try:
+        img = Image.open(f)
+    except Exception:
+        return HttpResponseBadRequest("Invalid or unsupported image.")
 
-            if out_format == "PNG":
-                # PNG hat keinen "quality"-Begriff, sondern compress_level 0..9.
-                # Mapping: quality 1..100 -> compress_level 9..0 (höhere Qualität = weniger Kompression)
-                compress_level = int(round((100 - max(1, min(100, quality))) * 9 / 99))
-                compress_level = max(0, min(9, compress_level))
-                img.convert("RGBA").save(buf, format="PNG", optimize=True, compress_level=compress_level)
-                ext = "png"
-                ctype = "image/png"
+    base, _ = os.path.splitext(f.name)
+    out = BytesIO()
 
-            elif out_format == "JPEG":
-                q = max(1, min(95, int(quality)))  # >95 bringt kaum was, Dateigröße wächst stark
-                img.convert("RGB").save(buf, format="JPEG", quality=q, optimize=True, progressive=progressive)
-                ext = "jpg"
-                ctype = "image/jpeg"
+    try:
+        if out_format == "JPEG" or out_format == "JPG":
+            # JPEG hat kein Alpha → nach RGB
+            img = img.convert("RGB")
+            img.save(out, format="JPEG", quality=min(95, quality), progressive=progressive, optimize=False)
+            filename = f"{base}.jpg"
+            ctype = "image/jpeg"
 
-            elif out_format == "WEBP":
-                if lossless_webp:
-                    img.save(buf, format="WEBP", lossless=True, method=6)
-                else:
-                    q = max(1, min(100, int(quality)))
-                    img.save(buf, format="WEBP", quality=q, method=6)
-                ext = "webp"
-                ctype = "image/webp"
-
+        elif out_format == "WEBP":
+            if lossless_webp:
+                # verlustfrei ignoriert quality
+                img.save(out, format="WEBP", lossless=True)
             else:
-                # Fallback: verhalte dich wie vorher (PNG)
-                img.convert("RGBA").save(buf, format="PNG", optimize=True)
-                ext = "png"
-                ctype = "image/png"
+                img.save(out, format="WEBP", quality=quality, method=4)
+            filename = f"{base}.webp"
+            ctype = "image/webp"
 
-            buf.seek(0)
-        except Exception:
-            return HttpResponseBadRequest("Datei konnte nicht konvertiert werden.")
+        else:
+            # PNG (Default)
+            img = img.convert("RGBA")
+            # quality (1..100) grob auf PNG compress_level (0..9) abbilden: 100 → 0 (schnell), 1 → 9 (max. Kompression)
+            compress_level = max(0, min(9, int(round((100 - quality) / 100 * 9))))
+            img.save(out, format="PNG", compress_level=compress_level, optimize=False)
+            filename = f"{base}.png"
+            ctype = "image/png"
+    except Exception:
+        return HttpResponseBadRequest("Conversion failed.")
 
-        filename = f"{base}_converted.{ext}"
-
-        # Response + Cookie wie bisher
-        response = FileResponse(buf, as_attachment=True, filename=filename, content_type=ctype)
-        response.set_cookie("weconvert_done", "1", max_age=60, samesite="Lax", path="/")
-        return response
-
-    # GET: Formular anzeigen
-    return render(request, "weconvert/upload.html", {"form": ImageUploadForm()})
+    out.seek(0)
+    return FileResponse(out, as_attachment=True, filename=filename, content_type=ctype)
